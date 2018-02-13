@@ -26,28 +26,35 @@
  * @returns []
  */
 function generateReturnParcels(profile, partnerConfig) {
-    var returnParcels = [];
+    var returnParcels = [],
+        htSlotName,
+        xSlotsArray,
+        htSlot,
+        xSlotName,
+        i,
+        utils = require('./support/libraryStubData.js'),
+        system = utils['system.js'];
 
-    for (var htSlotName in partnerConfig.mapping) {
-        if (partnerConfig.mapping.hasOwnProperty(htSlotName)) {
-            var xSlotsArray = partnerConfig.mapping[htSlotName];
-            for (var i = 0; i < xSlotsArray.length; i++) {
-                var xSlotName = xSlotsArray[i];
-                returnParcels.push({
-                    partnerId: profile.partnerId,
-                    htSlot: {
-                        getId: function () {
-                            return htSlotName
-                        }
-                    },
-                    ref: "",
-                    xSlotRef: partnerConfig.xSlots[xSlotName],
-                    requestId: '_' + Date.now()
-                });
+    for (htSlotName in partnerConfig.mapping) {
+        xSlotsArray = partnerConfig.mapping[htSlotName];
+        htSlot = {
+            id: htSlotName,
+            getId: function () {
+                return this.id;
             }
         }
+        for (i = 0; i < xSlotsArray.length; i++) {
+            xSlotName = xSlotsArray[i];
+            returnParcels.push({
+                partnerId: profile.partnerId,
+                htSlot: htSlot,
+                ref: "", // how is this populated?
+                xSlotName: xSlotName,
+                xSlotRef: partnerConfig.xSlots[xSlotName],
+                requestId: system.generateUniqueId(),
+            });
+        }
     }
-
     return returnParcels;
 }
 
@@ -66,6 +73,8 @@ describe('parseResponse', function () {
     var partnerConfig = require('./support/mockPartnerConfig.json');
     var responseData = require('./support/mockResponseData.json');
     var expect = require('chai').expect;
+    var Size = libraryStubData['size.js'];
+    var bidTransformer = libraryStubData['bid-transformer.js'];
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
@@ -82,7 +91,7 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            mockData = responseData.bid;
+            mockData = responseData.bid.seatbid[0].bid;
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
@@ -143,16 +152,18 @@ describe('parseResponse', function () {
 
         /* ---------- ADD MORE TEST CASES TO TEST AGAINST REAL VALUES ------------*/
         it('each parcel should have the correct values set', function () {
+            var currRp,
+                currBid,
+                i, j;
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
-
             /* Get mock response data from our responseData file */
-            mockData = responseData.bid;
-
+            mockData = responseData.bid.seatbid[0].bid;
+            bidTransformer.setConfig(partnerModule.bidTransformer);
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
-            for (var i = 0; i < returnParcels.length; i++) {
-
+            for (i = 0; i < returnParcels.length; i++) {
+                currRp = returnParcels[i];
                 /* IF MRA, parse one parcel at a time */
                 if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
 
@@ -162,7 +173,35 @@ describe('parseResponse', function () {
                  * The parcels have already been parsed and should contain all the
                  * necessary demand.
                  */
+                for(j=0; j<mockData.length; j++) {
+                    currBid = mockData[j];
+                    if (currBid.impid === currRp.xSlotRef.bid_id) {
+                        expect(currRp.price).to.equal(bidTransformer.applyRounding(currBid.price));
+                        expect(currRp.targetingType).to.equal('slot');
+                        expect(currRp.adm).to.equal(currBid.adm);
+                        expect(currRp.targeting).to.not.equal(undefined);
+                        expect(currRp.targeting[partnerModule.profile.targetingKeys.id][0]).to.equal(currRp.requestId);
+                        var tempValue,
+                            sizeKey = Size.arrayToString([currBid.w, currBid.h]),
+                            bidDealId = currBid.dealid,
+                            targetingCpm = bidTransformer.applyRounding(currBid.price),
+                            bidDealId = currBid.dealid;
+                        tempValue = sizeKey + "_" + targetingCpm;
 
+
+
+                        if(bidDealId) {
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pm]).to.be.an('array').with.length.above(0);
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pm][0]).to.be(tempValue);
+                            tempValue =  sizeKey + "_" + bidDealId;
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pmid]).to.be.an('array').with.length.above(0);
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pmid][0]).to.be(tempValue);    
+                        } else {
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.om]).to.be.an('array').with.length.above(0);
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.om][0]).to.equal(tempValue);
+                        }
+                    }
+                }
                 expect(returnParcels[i]).to.exist;
             }
         });
@@ -171,7 +210,7 @@ describe('parseResponse', function () {
 
     describe('should correctly parse passes: ', function () {
 
-
+        return;
         it('each parcel should have the required fields set', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
@@ -236,16 +275,14 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            mockData = responseData.deals;
+            mockData = responseData.bid.seatbid[0].bid;
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
             for (var i = 0; i < returnParcels.length; i++) {
-
                 /* IF MRA, parse one parcel at a time */
                 if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
-
                 var result = inspector.validate({
                     type: 'object',
                     properties: {
@@ -329,5 +366,28 @@ describe('parseResponse', function () {
             }
         });
         /* -----------------------------------------------------------------------*/
+    });
+
+    describe('render the winning creative: ', function() {
+        it('should render the winning creative', function() {
+            mockData = responseData.bid.seatbid[0].bid;
+
+            /* IF SRA, parse all parcels at once */
+            if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
+
+            for (var i = 0; i < returnParcels.length; i++) {
+
+                /* IF MRA, parse one parcel at a time */
+                if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
+
+                /* Add test cases to test against each of the parcel's set fields
+                 * to make sure the response was parsed correctly.
+                 *
+                 * The parcels have already been parsed and should contain all the
+                 * necessary demand.
+                 */
+            }
+            partnerModule.render(returnParcels[0].xSlotRef.adUnitName, returnParcels[0].adm);
+        });
     });
 });
