@@ -79,8 +79,149 @@ function PubMaticHtb(configs) {
 
     /* Utilities
      * ---------------------------------- */
+	function __populateImprObject(returnParcels) {
+        let retArr = [],
+            impObj = {},
+            sizes = [];
 
-    /**
+        returnParcels.forEach(rp => {
+            impObj = {
+                id: rp.bid_id || System.generateUniqueId(),
+                tagId: rp.xSlotRef.adUnitName,
+                bidFloor: _parseSlotParam(Constants.Keys.KADFLOOR, rp.kadfloor),
+                ext: {
+                    pmZoneId: _parseSlotParam(Constants.Keys.PMZONEID, rp.pmzoneid)
+                }
+            }
+            if (rp.hasOwnProperty(Constants.Keys.XSLOTREF) && 
+                rp.xSlotRef.hasOwnProperty(Constants.Keys.SIZES)) {
+                sizes = rp.xSlotRef.sizes[0];
+                if (sizes.length > 0) {
+                    impObj.banner = {
+                        w: sizes[0],
+                        h: sizes[1]
+                    }
+                } else {
+                    Utilities.logError("PubMatic: Error in sizes array");
+                }
+            } else {
+                Utilities.logError("PubMatic: Error in xSlotRef.sizes");
+            }
+            retArr.push(impObj);
+        });
+
+        return retArr;
+    }	
+	
+	function _parseSlotParam(paramName, paramValue) {
+      if (!Utilities.isStr(paramValue)) {
+        paramValue && Utilities.logWarn('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+        return Constants.UNDEFINED;
+      }
+
+      switch (paramName) {
+        case Constants.Keys.PMZONEID:
+          return paramValue.split(',').slice(0, 50).map(id => id.trim()).join();
+        case Constants.Keys.KADFLOOR:
+          return parseFloat(paramValue) || Constants.UNDEFINED;
+        case Constants.Keys.LAT:
+          return parseFloat(paramValue) || Constants.UNDEFINED;
+        case Constants.Keys.LON:
+          return parseFloat(paramValue) || Constants.UNDEFINED;
+        case Constants.Keys.YOB:
+          return parseInt(paramValue) || Constants.UNDEFINED;
+        default:
+          return paramValue;
+      }
+    }
+ 
+    function __populateImprObject(returnParcels) {
+        let retArr = [],
+            impObj = {},
+            sizes = [];
+
+        returnParcels.forEach(rp => {
+            impObj = {
+                id: rp.bid_id || System.generateUniqueId(),
+                tagId: rp.xSlotRef.adUnitName,
+                bidFloor: _parseSlotParam(Constants.Keys.KADFLOOR, rp.kadfloor),
+                ext: {
+                    pmZoneId: _parseSlotParam(Constants.Keys.PMZONEID, rp.pmzoneid)
+                }
+            }
+            if (rp.hasOwnProperty(Constants.Keys.XSLOTREF) && 
+                rp.xSlotRef.hasOwnProperty(Constants.Keys.SIZES)) {
+                sizes = rp.xSlotRef.sizes[0];
+                if (sizes.length > 0) {
+                    impObj.banner = {
+                        h: sizes[1],
+                        w: sizes[0]
+                    }
+                } else {
+                    Utilities.logError("PubMatic: Error in sizes array");
+                }
+            } else {
+                Utilities.logError("PubMatic: Error in xSlotRef.sizes");
+            }
+            retArr.push(impObj);
+        });
+
+        return retArr;
+    }
+
+    function __populateSiteObject(publisherId) {
+        var retObj = 
+        {
+            page: Browser.getTopWindowUrl(),
+            ref: Browser.getTopWindowReferrer(),
+            publisher: {
+                id: publisherId, // mandatory
+                domain: Browser.getDomain()
+            },
+            domain: Browser.getDomain()
+        }
+        return retObj;
+    }
+
+    function __populateDeviceInfo(rp) {
+        return {
+            ua: Browser.getUserAgent(),
+            js: 1,
+            dnt: Browser.getTrackingInfo(),
+            h: Browser.getScreenHeight(),
+            w: Browser.getScreenWidth(),
+            language: Browser.getLanguage(),
+            geo: {
+                lat: _parseSlotParam(Constants.Keys.LAT, rp.lat),
+                lon: _parseSlotParam(Constants.Keys.LON, rp.lon),
+            }
+        }
+    }
+
+    function __populateUserInfo(rp) {
+        return {
+            gender: rp.gender ? rp.gender.trim() : Constants.UNDEFINED,
+            geo: {
+                lat: _parseSlotParam(Constants.Keys.LAT, rp.lat),
+                lon: _parseSlotParam(Constants.Keys.LON, rp.lon),
+            },
+            yob: _parseSlotParam(Constants.Keys.YOB, rp.yob)
+        };
+    }
+
+    function __populateExtObject(rp) {
+        var ext = {};
+        ext.wrapper = {};
+        ext.wrapper.profile = rp.profile || Constants.UNDEFINED; // remove ? check if mandatory
+        ext.wrapper.version = rp.version || Constants.UNDEFINED; // remove ? check if mandatory
+        ext.wrapper.wiid = rp.wiid || Constants.UNDEFINED; // 
+        ext.wrapper.wv = Constants.REPO_AND_VERSION;
+        ext.wrapper.transactionId = rp.transactionId;
+        ext.wrapper.wp = 'pbjs' ;
+        
+        return ext;   
+    }    
+	/**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
      *
@@ -148,20 +289,26 @@ function PubMaticHtb(configs) {
          */
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
-        var queryObj = {};
-        var callbackId = System.generateUniqueId();
-
-        /* Change this to your bidder endpoint.*/
-        var baseUrl = Browser.getProtocol() + '//someAdapterEndpoint.com/bid';
-
-        /* ---------------- Craft bid request using the above returnParcels --------- */
-
-
+        var payload = {},
+        callbackId = System.generateUniqueId(),
+        //baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?';
+        baseUrl = '//hbopenbid.pubmatic.com/translator?';
+        payload = { 
+            id: '' + new Date().getTime(), // str | mandatory
+            at: Constants.AUCTION_TYPE, // int | mandatory
+            cur: [Constants.CURRENCY], // [str] | opt
+            imp: __populateImprObject(returnParcels), // obj | mandatory - pending
+            site: __populateSiteObject(returnParcels[0].pubId), //// obj | opt
+            device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
+            user: __populateUserInfo(returnParcels[0]), // obj | opt
+            ext: __populateExtObject(returnParcels[0]), // not required?? - to be checked
+            secure: Browser.isSecure()
+        }
+        
         /* -------------------------------------------------------------------------- */
-
         return {
             url: baseUrl,
-            data: queryObj,
+            data: payload,
             callbackId: callbackId
         };
     }
@@ -215,9 +362,7 @@ function PubMaticHtb(configs) {
      * attached to each one of the objects for which the demand was originally requested for.
      */
     function __parseResponse(sessionId, adResponse, returnParcels) {
-
-        var unusedReturnParcels = returnParcels.slice();
-
+        
         /* =============================================================================
          * STEP 4  | Parse & store demand response
          * -----------------------------------------------------------------------------
@@ -239,118 +384,56 @@ function PubMaticHtb(configs) {
 
          /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
-        var bids = adResponse;
+        var i = 0,
+            targetingType,
+            bidDealId,
+            sizeKey = "",
+            targetingCpm,
+            bidCreative,
+            pubKitAdId,
+            cnt = 0;
 
-        /* --------------------------------------------------------------------------------- */
+        returnParcels.forEach(rp => {
+            cnt = 0;
+            adResponse.forEach(ar => {
+                if (ar.impid === rp.xSlotRef.bid_id) {
+                    bidDealId = ar.dealid;
+                    targetingCpm = BidTransformer.applyRounding(ar.price);
+                    bidCreative = ar.adm;
 
-        for (var j = 0; j < returnParcels.length; j++) {
-            var curReturnParcel = returnParcels[j];
+                    rp.price = BidTransformer.applyRounding(ar.price);
+                    rp.targetingType = Constants.SLOT;
+                    rp.size = [Number(ar.w), Number(ar.h)];
+                    sizeKey = Size.arrayToString(rp.size);
+                    
+                    rp.adm = bidCreative;
+                    rp.targeting = {};
+                    if (bidDealId) {
+                        rp.targeting[__baseClass._configs.targetingKeys.pmid] = [sizeKey + "_" + bidDealId];
+                        rp.targeting[__baseClass._configs.targetingKeys.pm] = [sizeKey + "_" + targetingCpm];
+                    } else {
+                        rp.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + "_" + targetingCpm];
+                    }
+                    rp.targeting[__baseClass._configs.targetingKeys.id] = [rp.requestId];
 
-            /* ----------- Fill this out to find a matching bid for the current parcel ------------- */
-            var curBid;
-
-            for (var i = 0; i < bids.length; i++) {
-
-                /**
-                 * This section maps internal returnParcels and demand returned from the bid request.
-                 * In order to match them correctly, they must be matched via some criteria. This
-                 * is usually some sort of placements or inventory codes. Please replace the someCriteria
-                 * key to a key that represents the placement in the configuration and in the bid responses.
-                 */
-
-                if (curReturnParcel.xSlotRef.someCriteria === bids[i].someCriteria) {
-                    curBid = bids[i];
-                    break;
+                    pubKitAdId = RenderService.registerAd(
+                        sessionId,
+                        __profile.partnerId,
+                        __render, [bidCreative],
+                        '',
+                        __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
+                    );
+                    rp.targeting.pubKitAdId = pubKitAdId; //why is this required. not mentioned in the documentation, but is present in the test cases.
+                    rp.pass = false;
+                } else {
+                    cnt++;
                 }
-            }
-
-            /* ------------------------------------------------------------------------------------*/
-
-            /* HeaderStats information */
-            var headerStatsInfo = {};
-            headerStatsInfo[curReturnParcel.htSlot.getId()] = [curReturnParcel.xSlotName];
-
-            /* No matching bid found so its a pass */
-            if (!curBid) {
-                if (__profile.enabledAnalytics.requestTime) {
-                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
+                if (cnt === adResponse.length) {
+                    //no matching bid found.
+                    rp.pass = true;
                 }
-                curReturnParcel.pass = true;
-                continue;
-            }
-
-            /* ---------- Fill the bid variables with data from the bid response here. ------------*/
-            /* Using the above variable, curBid, extract various information about the bid and assign it to
-            * these local variables */
-
-            var bidPrice = curBid.price; /* the bid price for the given slot */
-            var bidSize = [curBid.width, curBid.height]; /* the size of the given slot */
-            var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
-            var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
-
-            /* ---------------------------------------------------------------------------------------*/
-
-            if (__profile.enabledAnalytics.requestTime) {
-                __baseClass._emitStatsEvent(sessionId, 'hs_slot_bid', headerStatsInfo);
-            }
-
-            curReturnParcel.size = bidSize;
-            curReturnParcel.targetingType = 'slot';
-            curReturnParcel.targeting = {};
-
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            var targetingCpm = __bidTransformers.targeting.apply(bidPrice);
-            var sizeKey = Size.arrayToString(curReturnParcel.size);
-
-            if (bidDealId) {
-                curReturnParcel.targeting[__baseClass._configs.targetingKeys.pmid] = [sizeKey + '_' + bidDealId];
-                curReturnParcel.targeting[__baseClass._configs.targetingKeys.pm] = [sizeKey + '_' + targetingCpm];
-            } else {
-                curReturnParcel.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + '_' + targetingCpm];
-            }
-            curReturnParcel.targeting[__baseClass._configs.targetingKeys.id] = [curReturnParcel.requestId];
-
-            if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_SIZE) {
-                RenderService.registerAdByIdAndSize(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId, bidSize
-                );
-            } else if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_PRICE) {
-                RenderService.registerAdByIdAndPrice(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId,
-                    targetingCpm
-                );
-            }
-            //? }
-
-            //? if (FEATURES.RETURN_CREATIVE) {
-            curReturnParcel.adm = bidCreative;
-            //? }
-
-            //? if (FEATURES.RETURN_PRICE) {
-            curReturnParcel.price = Number(__bidTransformers.price.apply(bidPrice));
-            //? }
-
-            //? if (FEATURES.INTERNAL_RENDER) {
-            var pubKitAdId = RenderService.registerAd(
-                sessionId,
-                __profile.partnerId,
-                __render, [bidCreative],
-                '',
-                __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
-            );
-            curReturnParcel.targeting.pubKitAdId = pubKitAdId;
-            //? }
-        }
+            });
+        });
     }
 
     /* =====================================
@@ -370,21 +453,25 @@ function PubMaticHtb(configs) {
 
         /* ---------- Please fill out this partner profile according to your module ------------*/
         __profile = {
-            partnerId: 'PubMaticHtb', // PartnerName
-            namespace: 'PubMaticHtb', // Should be same as partnerName
+            partnerId: Constants.PUBMATIC_PARTNER_ID, // PartnerName
+            namespace: Constants.PUBMATIC_PARTNER_ID, // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.0.0',
-            targetingType: 'slot',
+            version: '2.2.0',
+            targetingType: Constants.SLOT,
             enabledAnalytics: {
-                requestTime: true
+                requestTime: !0
             },
             features: {
                 demandExpiry: {
-                    enabled: false,
+                    enabled: !1,
                     value: 0
                 },
                 rateLimiting: {
-                    enabled: false,
+                    enabled: !1,
+                    value: 0
+                },
+                prefetchDisabled: {
+                    enabled: !0,
                     value: 0
                 }
             },
@@ -395,15 +482,15 @@ function PubMaticHtb(configs) {
                 pmid: 'ix_pubm_dealid'
             },
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
-            callbackType: Partner.CallbackTypes.ID, // Callback type, please refer to the readme for details
+            callbackType: Partner.CallbackTypes.CALLBACK_NAME, // Callback type, please refer to the readme for details
             architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
-            requestType: Partner.RequestTypes.ANY // Request type, jsonp, ajax, or any.
+            requestType: Partner.RequestTypes.JSONP // Request type, jsonp, ajax, or any.
         };
         /* ---------------------------------------------------------------------------------------*/
 
         //? if (DEBUG) {
-        var results = ConfigValidators.partnerBaseConfig(configs) || PartnerSpecificValidator(configs);
-
+        // What is the need for this: var results = PartnerSpecificValidator(configs);
+        var results = PartnerSpecificValidator(configs);
         if (results) {
             throw Whoopsie('INVALID_CONFIG', results);
         }
@@ -421,9 +508,9 @@ function PubMaticHtb(configs) {
             targeting: {
                 inputCentsMultiplier: 1, // Input is in cents
                 outputCentsDivisor: 1, // Output as cents
-                outputPrecision: 0, // With 0 decimal places
+                outputPrecision: 2, // With 0 decimal places
                 roundingType: 'FLOOR', // jshint ignore:line
-                floor: 0,
+                floor: 1,
                 buckets: [{
                     max: 2000, // Up to 20 dollar (above 5 cents)
                     step: 5 // use 5 cent increments
@@ -443,25 +530,10 @@ function PubMaticHtb(configs) {
             //? }
         };
 
+        __bidTransformers = bidTransformerConfigs;
+
         /* --------------------------------------------------------------------------------------- */
-
-        if (configs.bidTransformer) {
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            bidTransformerConfigs.targeting = configs.bidTransformer;
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            bidTransformerConfigs.price.inputCentsMultiplier = configs.bidTransformer.inputCentsMultiplier;
-            //? }
-        }
-
-        __bidTransformers = {};
-
-        //? if (FEATURES.GPT_LINE_ITEMS) {
-        __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
-        //? }
-        //? if (FEATURES.RETURN_PRICE) {
-        __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
-        //? }
+        BidTransformer.setConfig(bidTransformerConfigs);
 
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
@@ -501,6 +573,7 @@ function PubMaticHtb(configs) {
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
         adResponseCallback: adResponseCallback,
+        bidTransformer: __bidTransformers
         //? }
     };
 

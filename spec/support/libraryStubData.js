@@ -1,28 +1,109 @@
 var partnerStub = require('./partnerStub.js');
 var openRtbStub = require('./openRtbStub.js');
 var libraryStubData = {
-    'bid-transformer.js': function (config) {
-        return {
-            apply: function (price) {
-                return price;
+    'bid-transformer.js': {
+        __config: {},
+        setConfig: function(config) {
+            __config = config;
+        },
+        getConfig: function () {
+            return __config;
+        },
+        applyRounding: function(value, key) {
+            var config = this.getConfig();
+            key = key || 'targeting';
+            switch (config[key].roundingType) {
+                case 'FLOOR':
+                    return Math.floor(value);
+                case 'NONE':
+                default:
+                    return Math.round(value);
             }
         }
-    },
+    }, 
     'browser.js': {
+        getDomain: function() {
+            //return window.location.hostname;
+            return "ebay.com";
+        },
+        getTrackingInfo: function() {
+            return 0;
+            /*return (navigator.doNotTrack == 'yes' || 
+                    navigator.doNotTrack == '1' || 
+                    navigator.msDoNotTrack == '1') 
+                    ? 1 : 0;*/
+        },
         getProtocol: function () {
+            //return window.location.protocol;
             return 'http:';
         },
         getReferrer: function () {
+            //return document.referrer;
             return 'localhost';
         },
         getPageUrl: function () {
+            //return window.location.href;
             return 'http://localhost';
         },
         getUserAgent: function () {
+            //return navigator.userAgent;
             return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
+            //return window.navigator.language;
             return 'en-US';
+        },
+        getTopWindowLocation: function () {
+            /*let location;
+            try {
+                // force an exception in x-domain enviornments. #1509
+                window.top.location.toString();
+                location = window.top.location;
+            } catch (e) {
+                location = window.location;
+            }*/
+            location = "http://localhost"
+            return location;
+        },
+        getTopWindowUrl: function () {
+            /*let href;
+            try {
+                href = this.getTopWindowLocation().href;
+            } catch (e) {
+                href = mock.getLocation();
+            }
+            href = mock.getNavigator().userAgent;*/
+            href = "http://ebay.com/inte/123.html?pwtv=8\u0026pwtvc=1\u0026profileid=593";
+            return href;
+        },
+        getTopWindowReferrer: function() {
+          /*try {
+            return window.top.document.referrer;
+          } catch (e) {
+            return document.referrer;
+          }*/
+          return "";
+        },
+        getScreenHeight: function(win) {
+            if(win) {
+                var screenHeight = -1;
+                win.innerHeight ? (screenHeight = win.innerHeight) : win.document && win.document.documentElement && win.document.documentElement.clientHeight ? (screenHeight = win.document.documentElement.clientHeight) : win.document.body && (screenHeight = win.document.body.clientHeight);
+                return screenHeight;
+            } else {
+                return 0;
+            }
+        },
+        getScreenWidth: function(win) {
+            if (win) {
+                var screenWidth = -1;
+                win.innerHeight ? (screenWidth = win.innerWidth) : win.document && win.document.documentElement && win.document.documentElement.clientWidth ? (screenWidth = win.document.documentElement.clientWidth) : win.document.body && (screenWidth = win.document.body.clientWidth);
+                return screenWidth;
+            } else {
+                return 0;
+            }
+        },
+        isSecure: function () {
+            return this.getProtocol() === "https:" ? 1 : 0;
         }
     },
     'classify.js': {
@@ -35,6 +116,21 @@ var libraryStubData = {
             ID_AND_SIZE: 0,
             ID_AND_PRICE: 1
         },
+        Keys: {
+            PLACEMENTID: "placementId",
+            XSLOTREF: "xSlotRef",
+            SIZES: "sizes",
+            PMZONEID: 'pmzoneid',
+            KADFLOOR: 'kadfloor',
+            LAT: 'lat', 
+            LON: 'lon',
+            YOB: 'yob'
+        },
+        AUCTION_TYPE: 1,
+        PUBMATIC_PARTNER_ID: "PubMaticHtb",
+        CURRENCY: 'USD',
+        UNDEFINED: undefined,
+        SLOT: 'slot'
     },
     'partner.js': partnerStub,
     'openrtb.js': openRtbStub,
@@ -76,7 +172,27 @@ var libraryStubData = {
             return adm;
         },
     },
-    'utilities.js': {},
+    'utilities.js': {
+        isA: function (object, _t) {
+          return toString.call(object) === '[object ' + _t + ']';
+        },
+        isStr: function(object) {
+            return this.isA(object, "String");
+        },
+        logWarn: function (msg) {
+          if (debugTurnedOn()) {
+            console.warn('WARNING: ' + msg);
+          }
+        },
+        logInfo: function (msg) {
+          if (debugTurnedOn()) {
+            console.warn('INFO: ' + msg);
+          }  
+        },
+        debugTurnedOn: function() {
+            return false;
+        }
+    },
     'whoopsie.js': function () {
         return null;
     },

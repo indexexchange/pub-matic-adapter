@@ -17,7 +17,7 @@
 // Dependencies ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-var Inspector = require('../../../libs/external/schema-inspector.js');
+var Inspector = require('./node_modules/schema-inspector/lib/schema-inspector.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main ////////////////////////////////////////////////////////////////////////
@@ -37,23 +37,59 @@ var partnerValidator = function (configs) {
     var result = Inspector.validate({
         type: 'object',
         properties: {
+            timeout: {
+                type: 'number'
+            },
+            publisherId: {
+                type: 'string'
+            },
+            bidTransformer: {
+                type: 'object',
+                properties: {
+                    outputCentsDivisor: {
+                        type: 'number'
+                    },
+                    outputPrecision: {
+                        type: 'number'  
+                    },
+                    roundingType: {
+                        type: 'string'
+                    },
+                    floor: {
+                        type: 'number'
+                    },
+                    buckets: {
+                        type: 'array'
+                    },
+                    bidUnitInCents: {
+                        type: 'number'
+                    }
+                }
+            },
             xSlots: {
                 type: 'object',
                 properties: {
                     '*': {
                         type: 'object',
                         properties: {
-                            placementId: {
-                                type: 'string',
+                            adUnitName: {
+                                type: 'string'
+                            },
+                            sizes: {
+                                type: 'array',
                                 minLength: 1
                             }
                         }
                     }
                 }
+            },
+            mapping: {
+                '*': {
+                    type: 'array'
+                }
             }
         }
     }, configs);
-
     if (!result.valid) {
         return result.format();
     }
