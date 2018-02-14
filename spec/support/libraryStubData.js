@@ -1,26 +1,19 @@
 var partnerStub = require('./partnerStub.js');
 var openRtbStub = require('./openRtbStub.js');
 var libraryStubData = {
-    'bid-transformer.js': {
-        __config: {},
-        setConfig: function(config) {
-            __config = config;
-        },
-        getConfig: function () {
-            return __config;
-        },
-        applyRounding: function(value, key) {
-            var config = this.getConfig();
-            key = key || 'targeting';
-            switch (config[key].roundingType) {
-                case 'FLOOR':
-                    return Math.floor(value);
-                case 'NONE':
-                default:
-                    return Math.round(value);
+    'bid-transformer.js': function (config) {
+        return {
+            apply: function (price) {
+                switch (config.roundingType) {
+                    case 'FLOOR':
+                        return Math.floor(price);
+                    case 'NONE':
+                    default:
+                        return Math.round(price);
+                }
             }
         }
-    }, 
+    },
     'browser.js': {
         getDomain: function() {
             //return window.location.hostname;

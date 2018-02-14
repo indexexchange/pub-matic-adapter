@@ -74,7 +74,7 @@ describe('parseResponse', function () {
     var responseData = require('./support/mockResponseData.json');
     var expect = require('chai').expect;
     var Size = libraryStubData['size.js'];
-    var bidTransformer = libraryStubData['bid-transformer.js'];
+    var BidTransformer = libraryStubData['bid-transformer.js'];
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
@@ -92,7 +92,6 @@ describe('parseResponse', function () {
 
             /* Get mock response data from our responseData file */
             mockData = responseData.bid.seatbid[0].bid;
-
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -154,11 +153,55 @@ describe('parseResponse', function () {
         it('each parcel should have the correct values set', function () {
             var currRp,
                 currBid,
-                i, j;
+                i, j,
+                __bidTransformers;
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
+
+            var bidTransformerConfigs = {
+                //? if (FEATURES.GPT_LINE_ITEMS) {
+                targeting: {
+                    inputCentsMultiplier: 1, // Input is in cents
+                    outputCentsDivisor: 1, // Output as cents
+                    outputPrecision: 2, // With 0 decimal places
+                    roundingType: 'FLOOR', // jshint ignore:line
+                    floor: 1,
+                    buckets: [{
+                        max: 2000, // Up to 20 dollar (above 5 cents)
+                        step: 5 // use 5 cent increments
+                    }, {
+                        max: 5000, // Up to 50 dollars (above 20 dollars)
+                        step: 100 // use 1 dollar increments
+                    }]
+                },
+                //? }
+                //? if (FEATURES.RETURN_PRICE) {
+                price: {
+                    inputCentsMultiplier: 1, // Input is in cents
+                    outputCentsDivisor: 1, // Output as cents
+                    outputPrecision: 0, // With 0 decimal places
+                    roundingType: 'NONE',
+                },
+                //? }
+            };
+            if (partnerConfig.bidTransformer) {
+                //? if (FEATURES.GPT_LINE_ITEMS) {
+                bidTransformerConfigs.targeting = partnerConfig.bidTransformer;
+                //? }
+                //? if (FEATURES.RETURN_PRICE) {
+                bidTransformerConfigs.price.inputCentsMultiplier = partnerConfig.bidTransformer.inputCentsMultiplier;
+                //? }
+            }
+
+            __bidTransformers = {};
+
+            //? if (FEATURES.GPT_LINE_ITEMS) {
+            __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
+            //? }
+            //? if (FEATURES.RETURN_PRICE) {
+            __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
+
             /* Get mock response data from our responseData file */
             mockData = responseData.bid.seatbid[0].bid;
-            bidTransformer.setConfig(partnerModule.bidTransformer);
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -176,7 +219,7 @@ describe('parseResponse', function () {
                 for(j=0; j<mockData.length; j++) {
                     currBid = mockData[j];
                     if (currBid.impid === currRp.xSlotRef.bid_id) {
-                        expect(currRp.price).to.equal(bidTransformer.applyRounding(currBid.price));
+                        expect(currRp.price).to.equal(__bidTransformers.price.apply(currBid.price));
                         expect(currRp.targetingType).to.equal('slot');
                         expect(currRp.adm).to.equal(currBid.adm);
                         expect(currRp.targeting).to.not.equal(undefined);
@@ -184,7 +227,7 @@ describe('parseResponse', function () {
                         var tempValue,
                             sizeKey = Size.arrayToString([currBid.w, currBid.h]),
                             bidDealId = currBid.dealid,
-                            targetingCpm = bidTransformer.applyRounding(currBid.price),
+                            targetingCpm = __bidTransformers.targeting.apply(currBid.price),
                             bidDealId = currBid.dealid;
                         tempValue = sizeKey + "_" + targetingCpm;
 
