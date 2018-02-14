@@ -362,7 +362,9 @@ function PubMaticHtb(configs) {
      * attached to each one of the objects for which the demand was originally requested for.
      */
     function __parseResponse(sessionId, adResponse, returnParcels) {
-        
+
+        var unusedReturnParcels = returnParcels.slice();
+
         /* =============================================================================
          * STEP 4  | Parse & store demand response
          * -----------------------------------------------------------------------------
@@ -384,56 +386,117 @@ function PubMaticHtb(configs) {
 
          /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
-        var i = 0,
-            targetingType,
-            bidDealId,
-            sizeKey = "",
-            targetingCpm,
-            bidCreative,
-            pubKitAdId,
-            cnt = 0;
+        var bids = adResponse;
 
-        returnParcels.forEach(rp => {
-            cnt = 0;
-            adResponse.forEach(ar => {
-                if (ar.impid === rp.xSlotRef.bid_id) {
-                    bidDealId = ar.dealid;
-                    targetingCpm = BidTransformer.applyRounding(ar.price);
-                    bidCreative = ar.adm;
+        /* --------------------------------------------------------------------------------- */
 
-                    rp.price = BidTransformer.applyRounding(ar.price);
-                    rp.targetingType = Constants.SLOT;
-                    rp.size = [Number(ar.w), Number(ar.h)];
-                    sizeKey = Size.arrayToString(rp.size);
-                    
-                    rp.adm = bidCreative;
-                    rp.targeting = {};
-                    if (bidDealId) {
-                        rp.targeting[__baseClass._configs.targetingKeys.pmid] = [sizeKey + "_" + bidDealId];
-                        rp.targeting[__baseClass._configs.targetingKeys.pm] = [sizeKey + "_" + targetingCpm];
-                    } else {
-                        rp.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + "_" + targetingCpm];
-                    }
-                    rp.targeting[__baseClass._configs.targetingKeys.id] = [rp.requestId];
+        for (var j = 0; j < returnParcels.length; j++) {
+            var curReturnParcel = returnParcels[j];
 
-                    pubKitAdId = RenderService.registerAd(
-                        sessionId,
-                        __profile.partnerId,
-                        __render, [bidCreative],
-                        '',
-                        __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
-                    );
-                    rp.targeting.pubKitAdId = pubKitAdId; //why is this required. not mentioned in the documentation, but is present in the test cases.
-                    rp.pass = false;
-                } else {
-                    cnt++;
+            /* ----------- Fill this out to find a matching bid for the current parcel ------------- */
+            var curBid;
+
+            for (var i = 0; i < bids.length; i++) {
+
+                /**
+                 * This section maps internal returnParcels and demand returned from the bid request.
+                 * In order to match them correctly, they must be matched via some criteria. This
+                 * is usually some sort of placements or inventory codes. Please replace the someCriteria
+                 * key to a key that represents the placement in the configuration and in the bid responses.
+                 */
+                if (bids[i].impid === curReturnParcel.xSlotRef.bid_id) {
+                    curBid = bids[i];
+                    break;
                 }
-                if (cnt === adResponse.length) {
-                    //no matching bid found.
-                    rp.pass = true;
+            }
+
+            /* ------------------------------------------------------------------------------------*/
+
+            /* HeaderStats information */
+            var headerStatsInfo = {};
+            headerStatsInfo[curReturnParcel.htSlot.getId()] = [curReturnParcel.xSlotName];
+
+            /* No matching bid found so its a pass */
+            if (!curBid) {
+                if (__profile.enabledAnalytics.requestTime) {
+                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
                 }
-            });
-        });
+                curReturnParcel.pass = true;
+                continue;
+            }
+
+            /* ---------- Fill the bid variables with data from the bid response here. ------------*/
+            /* Using the above variable, curBid, extract various information about the bid and assign it to
+            * these local variables */
+
+            var bidPrice = curBid.price; /* the bid price for the given slot */
+            var bidSize = [Number(curBid.w), Number(curBid.h)]; /* the size of the given slot */
+            var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
+            var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
+
+            /* ---------------------------------------------------------------------------------------*/
+
+            if (__profile.enabledAnalytics.requestTime) {
+                __baseClass._emitStatsEvent(sessionId, 'hs_slot_bid', headerStatsInfo);
+            }
+
+            curReturnParcel.size = bidSize;
+            curReturnParcel.targetingType = 'slot';
+            curReturnParcel.targeting = {};
+
+            //? if (FEATURES.GPT_LINE_ITEMS) {
+            var targetingCpm = __bidTransformers.targeting.apply(bidPrice);
+            var sizeKey = Size.arrayToString(curReturnParcel.size);
+
+            if (bidDealId) {
+                curReturnParcel.targeting[__baseClass._configs.targetingKeys.pmid] = [sizeKey + '_' + bidDealId];
+                curReturnParcel.targeting[__baseClass._configs.targetingKeys.pm] = [sizeKey + '_' + targetingCpm];
+            } else {
+                curReturnParcel.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + '_' + targetingCpm];
+            }
+            curReturnParcel.targeting[__baseClass._configs.targetingKeys.id] = [curReturnParcel.requestId];
+
+            if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_SIZE) {
+                RenderService.registerAdByIdAndSize(
+                    sessionId,
+                    __profile.partnerId,
+                    __render, [bidCreative],
+                    '',
+                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
+                    curReturnParcel.requestId, bidSize
+                );
+            } else if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_PRICE) {
+                RenderService.registerAdByIdAndPrice(
+                    sessionId,
+                    __profile.partnerId,
+                    __render, [bidCreative],
+                    '',
+                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
+                    curReturnParcel.requestId,
+                    targetingCpm
+                );
+            }
+            //? }
+
+            //? if (FEATURES.RETURN_CREATIVE) {
+            curReturnParcel.adm = bidCreative;
+            //? }
+
+            //? if (FEATURES.RETURN_PRICE) {
+            curReturnParcel.price = Number(__bidTransformers.price.apply(bidPrice));
+            //? }
+
+            //? if (FEATURES.INTERNAL_RENDER) {
+            var pubKitAdId = RenderService.registerAd(
+                sessionId,
+                __profile.partnerId,
+                __render, [bidCreative],
+                '',
+                __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
+            );
+            curReturnParcel.targeting.pubKitAdId = pubKitAdId;
+            //? }
+        }
     }
 
     /* =====================================
@@ -529,11 +592,23 @@ function PubMaticHtb(configs) {
             },
             //? }
         };
+        if (configs.bidTransformer) {
+            //? if (FEATURES.GPT_LINE_ITEMS) {
+            bidTransformerConfigs.targeting = configs.bidTransformer;
+            //? }
+            //? if (FEATURES.RETURN_PRICE) {
+            bidTransformerConfigs.price.inputCentsMultiplier = configs.bidTransformer.inputCentsMultiplier;
+            //? }
+        }
 
-        __bidTransformers = bidTransformerConfigs;
+        __bidTransformers = {};
 
-        /* --------------------------------------------------------------------------------------- */
-        BidTransformer.setConfig(bidTransformerConfigs);
+        //? if (FEATURES.GPT_LINE_ITEMS) {
+        __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
+        //? }
+        //? if (FEATURES.RETURN_PRICE) {
+        __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
+        //? }
 
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
