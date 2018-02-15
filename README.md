@@ -46,7 +46,7 @@ Below you will find everything you need to complete the certification process an
     * In addition, you should create more specific unit tests with actual values based on mock ad responses to confirm that your module is working as expected.
     * Please refer to the [Testing](#testing) section below for more information.
 5. <b>Submitting for Review</b>
-    * Once the module has been verified submit a pull request from the `development-v2`branch to the `master-v2` branch for the Index Exchange team to review. If everything is approved, your adapter will be officially certified!!
+    * Once the module has been verified submit a pull request from the `development-v2`branch to the `master-v2` branch for the Index Exchange team to review. If everything is approved, your adapter will be officially certified!
 
 ##  <a name='creative'></a> Standard HTW Creative Tag
 Our standard creative tag in dfp looks as follows:
