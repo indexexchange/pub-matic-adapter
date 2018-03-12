@@ -1,5 +1,9 @@
 var partnerStub = require('./partnerStub.js');
 var openRtbStub = require('./openRtbStub.js');
+/* Instantiate mock browser objects */
+var MockBrowser = require('mock-browser').mocks.MockBrowser;
+var mock = new MockBrowser();
+
 var libraryStubData = {
     'bid-transformer.js': function (config) {
         return {
@@ -15,89 +19,33 @@ var libraryStubData = {
         }
     },
     'browser.js': {
-        getDomain: function() {
-            //return window.location.hostname;
-            return "ebay.com";
-        },
-        getTrackingInfo: function() {
-            return 0;
-            /*return (navigator.doNotTrack == 'yes' || 
-                    navigator.doNotTrack == '1' || 
-                    navigator.msDoNotTrack == '1') 
-                    ? 1 : 0;*/
-        },
         getProtocol: function () {
-            //return window.location.protocol;
-            return 'http:';
+            return this.topWindow.location.protocol;
+            //return "https:";
         },
         getReferrer: function () {
-            //return document.referrer;
-            return 'localhost';
+            return this.topWindow.document.referrer;
+            //return 'localhost';
         },
         getPageUrl: function () {
-            //return window.location.href;
-            return 'http://localhost';
+            return this.topWindow.location.href; 
+            //'http://localhost';
         },
         getUserAgent: function () {
-            //return navigator.userAgent;
-            return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
+            return this.topWindow.navigator.userAgent;
+            //return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
-            //return window.navigator.language;
-            return 'en-US';
+            return this.topWindow.navigator.language;
+            //return 'en-US';
         },
-        getTopWindowLocation: function () {
-            /*let location;
-            try {
-                // force an exception in x-domain enviornments. #1509
-                window.top.location.toString();
-                location = window.top.location;
-            } catch (e) {
-                location = window.location;
-            }*/
-            location = "http://localhost"
-            return location;
+        getScreenWidth: function () {
+            return 1024;
         },
-        getTopWindowUrl: function () {
-            /*let href;
-            try {
-                href = this.getTopWindowLocation().href;
-            } catch (e) {
-                href = mock.getLocation();
-            }
-            href = mock.getNavigator().userAgent;*/
-            href = "http://ebay.com/inte/123.html?pwtv=8\u0026pwtvc=1\u0026profileid=593";
-            return href;
+        getScreenHeight: function () {
+            return 768;
         },
-        getTopWindowReferrer: function() {
-          /*try {
-            return window.top.document.referrer;
-          } catch (e) {
-            return document.referrer;
-          }*/
-          return "";
-        },
-        getScreenHeight: function(win) {
-            if(win) {
-                var screenHeight = -1;
-                win.innerHeight ? (screenHeight = win.innerHeight) : win.document && win.document.documentElement && win.document.documentElement.clientHeight ? (screenHeight = win.document.documentElement.clientHeight) : win.document.body && (screenHeight = win.document.body.clientHeight);
-                return screenHeight;
-            } else {
-                return 0;
-            }
-        },
-        getScreenWidth: function(win) {
-            if (win) {
-                var screenWidth = -1;
-                win.innerHeight ? (screenWidth = win.innerWidth) : win.document && win.document.documentElement && win.document.documentElement.clientWidth ? (screenWidth = win.document.documentElement.clientWidth) : win.document.body && (screenWidth = win.document.body.clientWidth);
-                return screenWidth;
-            } else {
-                return 0;
-            }
-        },
-        isSecure: function () {
-            return this.getProtocol() === "https:" ? 1 : 0;
-        }
+        topWindow: mock.getWindow(),
     },
     'classify.js': {
         derive: function (baseClass, derivedClass) {
@@ -108,22 +56,7 @@ var libraryStubData = {
         LineItemTypes: {
             ID_AND_SIZE: 0,
             ID_AND_PRICE: 1
-        },
-        Keys: {
-            PLACEMENTID: "placementId",
-            XSLOTREF: "xSlotRef",
-            SIZES: "sizes",
-            PMZONEID: 'pmzoneid',
-            KADFLOOR: 'kadfloor',
-            LAT: 'lat', 
-            LON: 'lon',
-            YOB: 'yob'
-        },
-        AUCTION_TYPE: 1,
-        PUBMATIC_PARTNER_ID: "PubMaticHtb",
-        CURRENCY: 'USD',
-        UNDEFINED: undefined,
-        SLOT: 'slot'
+        }
     },
     'partner.js': partnerStub,
     'openrtb.js': openRtbStub,
@@ -171,19 +104,6 @@ var libraryStubData = {
         },
         isStr: function(object) {
             return this.isA(object, "String");
-        },
-        logWarn: function (msg) {
-          if (debugTurnedOn()) {
-            console.warn('WARNING: ' + msg);
-          }
-        },
-        logInfo: function (msg) {
-          if (debugTurnedOn()) {
-            console.warn('INFO: ' + msg);
-          }  
-        },
-        debugTurnedOn: function() {
-            return false;
         }
     },
     'whoopsie.js': function () {
