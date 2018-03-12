@@ -28,7 +28,6 @@
 function generateReturnParcels(profile, partnerConfig) {
     var returnParcels = [],
         utils = require('./support/libraryStubData.js'),
-        consts = utils['constants.js'],
         system = utils['system.js'],
         xSlotName,
         xSlotsArray,
@@ -58,13 +57,13 @@ function generateReturnParcels(profile, partnerConfig) {
                 bid_id: partnerConfig.xSlots[xSlotName].bid_id,
                 
                 /* Pubmatic specific values. required in the api request */
-                lat: partnerConfig.lat || consts.UNDEFINED, 
-                lon: partnerConfig.lon || consts.UNDEFINED,
-                yob: partnerConfig.yob || consts.UNDEFINED,
-                gender: partnerConfig.gender || consts.UNDEFINED,
-                kadfloor: partnerConfig.kadfloor || consts.UNDEFINED,
-                profile: partnerConfig.profile || consts.UNDEFINED,
-                version: partnerConfig.version || consts.UNDEFINED
+                lat: partnerConfig.lat || undefined, 
+                lon: partnerConfig.lon || undefined,
+                yob: partnerConfig.yob || undefined,
+                gender: partnerConfig.gender || undefined,
+                kadfloor: partnerConfig.kadfloor || undefined,
+                profile: partnerConfig.profile || undefined,
+                version: partnerConfig.version || undefined
             });
         }
     }
@@ -86,7 +85,6 @@ describe('generateRequestObj', function () {
     partnerConfig = require('./support/mockPartnerConfig.json'),
     expect = require('chai').expect,
     browser = libraryStubData['browser.js'],
-    consts = libraryStubData['constants.js'],
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
@@ -141,6 +139,12 @@ describe('generateRequestObj', function () {
             /* Write unit tests to verify that your bid request url contains the correct
                 * request params, url, etc.
                 */
+            var domain = browser.topWindow.location.hostname;
+            var dnt = (browser.topWindow.navigator.doNotTrack == 'yes' || 
+                    browser.topWindow.navigator.doNotTrack == '1' || 
+                    browser.topWindow.navigator.msDoNotTrack == '1') 
+                    ? 1 : 0;
+            
             expect(requestObject).to.exist;
             expect(requestObject.url).to.exist;
             expect(requestObject.url).to.equal(endpoint)
@@ -149,26 +153,26 @@ describe('generateRequestObj', function () {
             var payload = requestObject.data;
             expect(payload).to.exist;
             expect(payload.id).to.exist;
-            expect(payload.at).to.equal(consts.AUCTION_TYPE);
+            expect(payload.at).to.equal(1);
             expect(payload.cur).to.be.an('array').with.length.above(0);
-            expect(payload.cur[0]).to.equal(consts.CURRENCY);
+            expect(payload.cur[0]).to.equal('USD');
 
             expect(payload.imp).to.exist.and.to.be.an('array').with.length.above(0);
             
             //test cases for payload.site object
             expect(payload.site).to.exist.and.to.be.an('object');
-            expect(payload.site.page).to.and.equal(browser.getTopWindowUrl());
-            expect(payload.site.ref).to.exist.and.equal(browser.getTopWindowReferrer());
+            expect(payload.site.page).to.and.equal(browser.topWindow.href);
+            expect(payload.site.ref).to.exist.and.equal(browser.topWindow.document.referrer);
             expect(payload.site.publisher).to.exist.and.be.an('object');
             expect(payload.site.publisher.id).to.exist.and.to.equal(partnerConfig.publisherId);
-            expect(payload.site.publisher.domain).to.exist.and.to.equal(browser.getDomain());
-            expect(payload.site.domain).to.exist.and.to.equal(browser.getDomain());
+            expect(payload.site.publisher.domain).to.exist.and.to.equal(domain);
+            expect(payload.site.domain).to.exist.and.to.equal(domain);
             
             //test cases for payload.device object
             expect(payload.device).to.exist.and.to.be.an('object');
             expect(payload.device.ua).to.exist.and.to.equal(browser.getUserAgent());
             expect(payload.device.js).to.exist.and.to.equal(1);
-            expect(payload.device.dnt).to.exist.and.to.equal(browser.getTrackingInfo());
+            expect(payload.device.dnt).to.exist.and.to.equal(dnt);
             expect(payload.device.h).to.exist.and.to.equal(browser.getScreenHeight());
             expect(payload.device.w).to.exist.and.to.equal(browser.getScreenWidth());
             expect(payload.device.language).to.exist.and.to.equal(browser.getLanguage());

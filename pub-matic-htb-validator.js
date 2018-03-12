@@ -17,7 +17,7 @@
 // Dependencies ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-var Inspector = require('./node_modules/schema-inspector/lib/schema-inspector.js');
+var Inspector = require('../../../libs/external/schema-inspector.js');
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main ////////////////////////////////////////////////////////////////////////
@@ -43,28 +43,33 @@ var partnerValidator = function (configs) {
             publisherId: {
                 type: 'string'
             },
-            bidTransformer: {
-                type: 'object',
-                properties: {
-                    outputCentsDivisor: {
-                        type: 'number'
-                    },
-                    outputPrecision: {
-                        type: 'number'  
-                    },
-                    roundingType: {
-                        type: 'string'
-                    },
-                    floor: {
-                        type: 'number'
-                    },
-                    buckets: {
-                        type: 'array'
-                    },
-                    bidUnitInCents: {
-                        type: 'number'
-                    }
-                }
+            lat: {
+                type: 'string',
+                optional: true
+            },
+            lon: {
+                type: 'string',
+                optional: true
+            },
+            yob: {
+                type: 'string',
+                optional: true
+            },
+            gender: {
+                type: 'string',
+                optional: true
+            },
+            kadfloor: {
+                type: 'string',
+                optional: true
+            },
+            profile: {
+                type: 'number',
+                optional: true
+            },
+            version: {
+                type: 'number',
+                optional: true
             },
             xSlots: {
                 type: 'object',
@@ -78,6 +83,9 @@ var partnerValidator = function (configs) {
                             sizes: {
                                 type: 'array',
                                 minLength: 1
+                            bid_id: {
+                                type: 'string',
+                                minLength: "1"
                             }
                         }
                     }
