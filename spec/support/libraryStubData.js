@@ -1,29 +1,51 @@
 var partnerStub = require('./partnerStub.js');
 var openRtbStub = require('./openRtbStub.js');
+/* Instantiate mock browser objects */
+var MockBrowser = require('mock-browser').mocks.MockBrowser;
+var mock = new MockBrowser();
+
 var libraryStubData = {
     'bid-transformer.js': function (config) {
         return {
             apply: function (price) {
-                return price;
+                switch (config.roundingType) {
+                    case 'FLOOR':
+                        return Math.floor(price);
+                    case 'NONE':
+                    default:
+                        return Math.round(price);
+                }
             }
         }
     },
     'browser.js': {
         getProtocol: function () {
-            return 'http:';
+            return this.topWindow.location.protocol;
+            //return "https:";
         },
         getReferrer: function () {
-            return 'localhost';
+            return this.topWindow.document.referrer;
+            //return 'localhost';
         },
         getPageUrl: function () {
-            return 'http://localhost';
+            return this.topWindow.location.href; 
+            //'http://localhost';
         },
         getUserAgent: function () {
-            return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
+            return this.topWindow.navigator.userAgent;
+            //return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
-            return 'en-US';
-        }
+            return this.topWindow.navigator.language;
+            //return 'en-US';
+        },
+        getScreenWidth: function () {
+            return 1024;
+        },
+        getScreenHeight: function () {
+            return 768;
+        },
+        topWindow: mock.getWindow(),
     },
     'classify.js': {
         derive: function (baseClass, derivedClass) {
@@ -34,7 +56,7 @@ var libraryStubData = {
         LineItemTypes: {
             ID_AND_SIZE: 0,
             ID_AND_PRICE: 1
-        },
+        }
     },
     'partner.js': partnerStub,
     'openrtb.js': openRtbStub,
@@ -76,7 +98,14 @@ var libraryStubData = {
             return adm;
         },
     },
-    'utilities.js': {},
+    'utilities.js': {
+        isA: function (object, _t) {
+          return toString.call(object) === '[object ' + _t + ']';
+        },
+        isStr: function(object) {
+            return this.isA(object, "String");
+        }
+    },
     'whoopsie.js': function () {
         return null;
     },

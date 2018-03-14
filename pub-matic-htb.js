@@ -79,8 +79,141 @@ function PubMaticHtb(configs) {
 
     /* Utilities
      * ---------------------------------- */
+     var __populateImprObject = returnParcels => {
+        let retArr = [],
+            impObj = {},
+            sizes = [];
 
-    /**
+        returnParcels.forEach(rp => {
+            impObj = {
+                id: rp.bid_id || System.generateUniqueId(),
+                tagId: rp.xSlotRef.adUnitName,
+                bidFloor: _parseSlotParam('kadfloor', rp.kadfloor),
+                ext: {
+                    pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
+                }
+            }
+            sizes = rp.xSlotRef.sizes[0];
+            if (sizes.length > 0) {
+                impObj.banner = {
+                    w: sizes[0],
+                    h: sizes[1]
+                }
+            } else {
+                console.log("PubMatic: Error in sizes array");
+            }
+            retArr.push(impObj);
+        });
+
+        return retArr;
+    }	
+	
+	var _parseSlotParam = (paramName, paramValue) => {
+      if (!Utilities.isStr(paramValue)) {
+        paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+        return undefined;
+      }
+
+      switch (paramName) {
+        case 'pmzoneid':
+          return paramValue.split(',').slice(0, 50).map(id => id.trim()).join();
+        case 'kadfloor':
+        case 'lat':
+        case 'lon':
+          return parseFloat(paramValue) || undefined;
+        case 'yob':
+          return parseInt(paramValue) || undefined;
+        default:
+          return paramValue;
+      }
+    }
+ 
+    var __populateImprObject = returnParcels => {
+        let retArr = [],
+            impObj = {},
+            sizes = [];
+
+        returnParcels.forEach(rp => {
+            impObj = {
+                id: rp.bid_id || System.generateUniqueId(),
+                tagId: rp.xSlotRef.adUnitName,
+                bidFloor: _parseSlotParam('kadfloor', rp.kadfloor),
+                ext: {
+                    pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
+                }
+            }
+            sizes = rp.xSlotRef.sizes[0];
+            if (sizes.length > 0) {
+                impObj.banner = {
+                    h: sizes[1],
+                    w: sizes[0]
+                }
+            } else {
+                console.log("PubMatic: Error in sizes array");
+            }
+            retArr.push(impObj);
+        });
+
+        return retArr;
+    }
+
+    var __populateSiteObject = publisherId => {
+        var retObj = 
+        {
+            page: Browser.topWindow.href,
+            ref: Browser.topWindow.document.referrer,
+            publisher: {
+                id: publisherId, // mandatory
+                domain: Browser.topWindow.location.hostname
+            },
+            domain: Browser.topWindow.location.hostname
+        }
+        return retObj;
+    }
+
+    var __populateDeviceInfo = rp => {
+        var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' || 
+                    Browser.topWindow.navigator.doNotTrack == '1' || 
+                    Browser.topWindow.navigator.msDoNotTrack == '1') 
+                    ? 1 : 0;
+        return {
+            ua: Browser.getUserAgent(),
+            js: 1,
+            dnt: dnt,
+            h: Browser.getScreenHeight(),
+            w: Browser.getScreenWidth(),
+            language: Browser.getLanguage(),
+            geo: {
+                lat: _parseSlotParam('lat', rp.lat),
+                lon: _parseSlotParam('lon', rp.lon),
+            }
+        }
+    }
+
+    var __populateUserInfo = rp => {
+        return {
+            gender: rp.gender ? rp.gender.trim() : undefined,
+            geo: {
+                lat: _parseSlotParam('lat', rp.lat),
+                lon: _parseSlotParam('lon', rp.lon),
+            },
+            yob: _parseSlotParam('yob', rp.yob)
+        };
+    }
+
+    var __populateExtObject = rp => {
+        var ext = {};
+        ext.wrapper = {};
+        ext.wrapper.profile = rp.profile || undefined; // remove ? check if mandatory
+        ext.wrapper.version = rp.version || undefined; // remove ? check if mandatory
+        ext.wrapper.wiid = rp.wiid || undefined; // 
+        //ext.wrapper.wv = Constants.REPO_AND_VERSION;
+        ext.wrapper.transactionId = rp.transactionId;
+        ext.wrapper.wp = 'pbjs' ;
+        
+        return ext;   
+    }    
+	/**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
      *
@@ -148,20 +281,26 @@ function PubMaticHtb(configs) {
          */
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
-        var queryObj = {};
-        var callbackId = System.generateUniqueId();
-
-        /* Change this to your bidder endpoint.*/
-        var baseUrl = Browser.getProtocol() + '//someAdapterEndpoint.com/bid';
-
-        /* ---------------- Craft bid request using the above returnParcels --------- */
-
-
+        var payload = {},
+        callbackId = System.generateUniqueId(),
+        //baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?';
+        baseUrl = '//hbopenbid.pubmatic.com/translator?';
+        payload = { 
+            id: '' + new Date().getTime(), // str | mandatory
+            at: 1, // int | mandatory
+            cur: ['USD'], // [str] | opt
+            imp: __populateImprObject(returnParcels), // obj | mandatory - pending
+            site: __populateSiteObject(returnParcels[0].pubId), //// obj | opt
+            device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
+            user: __populateUserInfo(returnParcels[0]), // obj | opt
+            ext: __populateExtObject(returnParcels[0]), // not required?? - to be checked
+            secure: Browser.getProtocol() === "https:" ? 1 : 0
+        }
+        
         /* -------------------------------------------------------------------------- */
-
         return {
             url: baseUrl,
-            data: queryObj,
+            data: payload,
             callbackId: callbackId
         };
     }
@@ -257,8 +396,7 @@ function PubMaticHtb(configs) {
                  * is usually some sort of placements or inventory codes. Please replace the someCriteria
                  * key to a key that represents the placement in the configuration and in the bid responses.
                  */
-
-                if (curReturnParcel.xSlotRef.someCriteria === bids[i].someCriteria) {
+                if (bids[i].impid === curReturnParcel.xSlotRef.bid_id) {
                     curBid = bids[i];
                     break;
                 }
@@ -284,7 +422,7 @@ function PubMaticHtb(configs) {
             * these local variables */
 
             var bidPrice = curBid.price; /* the bid price for the given slot */
-            var bidSize = [curBid.width, curBid.height]; /* the size of the given slot */
+            var bidSize = [Number(curBid.w), Number(curBid.h)]; /* the size of the given slot */
             var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
             var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
 
@@ -373,18 +511,22 @@ function PubMaticHtb(configs) {
             partnerId: 'PubMaticHtb', // PartnerName
             namespace: 'PubMaticHtb', // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.0.0',
+            version: '2.1.0',
             targetingType: 'slot',
             enabledAnalytics: {
-                requestTime: true
+                requestTime: !0
             },
             features: {
                 demandExpiry: {
-                    enabled: false,
+                    enabled: !1,
                     value: 0
                 },
                 rateLimiting: {
-                    enabled: false,
+                    enabled: !1,
+                    value: 0
+                },
+                prefetchDisabled: {
+                    enabled: !0,
                     value: 0
                 }
             },
@@ -395,15 +537,15 @@ function PubMaticHtb(configs) {
                 pmid: 'ix_pubm_dealid'
             },
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
-            callbackType: Partner.CallbackTypes.ID, // Callback type, please refer to the readme for details
+            callbackType: Partner.CallbackTypes.CALLBACK_NAME, // Callback type, please refer to the readme for details
             architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
-            requestType: Partner.RequestTypes.ANY // Request type, jsonp, ajax, or any.
+            requestType: Partner.RequestTypes.JSONP // Request type, jsonp, ajax, or any.
         };
         /* ---------------------------------------------------------------------------------------*/
 
         //? if (DEBUG) {
-        var results = ConfigValidators.partnerBaseConfig(configs) || PartnerSpecificValidator(configs);
-
+        // What is the need for this: var results = PartnerSpecificValidator(configs);
+        var results = PartnerSpecificValidator(configs);
         if (results) {
             throw Whoopsie('INVALID_CONFIG', results);
         }
@@ -442,9 +584,6 @@ function PubMaticHtb(configs) {
             },
             //? }
         };
-
-        /* --------------------------------------------------------------------------------------- */
-
         if (configs.bidTransformer) {
             //? if (FEATURES.GPT_LINE_ITEMS) {
             bidTransformerConfigs.targeting = configs.bidTransformer;
@@ -501,6 +640,7 @@ function PubMaticHtb(configs) {
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
         adResponseCallback: adResponseCallback,
+        bidTransformer: __bidTransformers
         //? }
     };
 
