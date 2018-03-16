@@ -40,6 +40,7 @@ function generateReturnParcels(profile, partnerConfig) {
             id: htSlotName,
             getId: function () {
                 return this.id;
+
             }
         }
 
