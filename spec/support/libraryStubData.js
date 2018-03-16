@@ -1,20 +1,36 @@
 var partnerStub = require('./partnerStub.js');
 var openRtbStub = require('./openRtbStub.js');
-
 /* Instantiate mock browser objects */
 var MockBrowser = require('mock-browser').mocks.MockBrowser;
 var mock = new MockBrowser();
 
 var libraryStubData = {
+
+    'bid-transformer.js': function (config) {
+        return {
+            apply: function (price) {
+                switch (config.roundingType) {
+                    case 'FLOOR':
+                        return Math.floor(price);
+                    case 'NONE':
+                    default:
+                        return Math.round(price);
+                }
+            }
+        }
+    },
     'browser.js': {
         getProtocol: function () {
-            return 'http:';
+            return this.topWindow.location.protocol;
+            //return "https:";
         },
         getReferrer: function () {
-            return 'localhost';
+            return this.topWindow.document.referrer;
+            //return 'localhost';
         },
         getUserAgent: function () {
-            return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
+            return this.topWindow.navigator.userAgent;
+            //return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
             return 'en-US';
@@ -39,7 +55,7 @@ var libraryStubData = {
         LineItemTypes: {
             ID_AND_SIZE: 0,
             ID_AND_PRICE: 1
-        },
+        }
     },
     'partner.js': partnerStub,
     'openrtb.js': openRtbStub,
@@ -126,7 +142,22 @@ var libraryStubData = {
             return (new Date()).getTime();
         }
     },
-    'utilities.js': {},
+    'utilities.js': {
+        isA: function (object, _t) {
+          return toString.call(object) === '[object ' + _t + ']';
+        },
+        isStr: function(object) {
+            return this.isA(object, "String");
+        }
+    },
+    'utilities.js': {
+        isA: function (object, _t) {
+          return toString.call(object) === '[object ' + _t + ']';
+        },
+        isStr: function(object) {
+            return this.isA(object, "String");
+        }
+    },
     'whoopsie.js': function () {
         return null;
     },

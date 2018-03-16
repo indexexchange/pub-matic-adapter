@@ -1,23 +1,34 @@
 {
     "timeout": 1000,
+    "publisherId": "5890",
+    "lat":"40.712775",
+    "lon":"-74.005973",
+    "yob":"1982",
+    "gender":"M",
+    "kadfloor":"1.75",
+    "profile": 593,
+    "version": 8,
     "xSlots": {
         "1": {
-            "placementId": "54321",
-            "sizes": [
-                [300, 250]
-            ]
-        },
-        "2": {
-            "placementId": "12345",
-            "sizes": [
-                [300, 600]
-            ]
-        },
-        "3": {
-            "placementId": "654321",
+            "adUnitName": "/43743431/DMDemo",
             "sizes": [
                 [728, 90]
-            ]
+            ],
+            "bid_id": "_4r5yag141" 
+        },
+        "2": {
+            "adUnitName": "/43743431/DMDemo1",
+            "sizes": [
+                [160, 600]
+            ],
+            "bid_id": "_fq7hgvshb"
+        },
+        "3": {
+            "adUnitName": "/43743431/DMDemo2",
+            "sizes": [
+                [728, 90]
+            ],
+            "bid_id": "_atwe4mwbp"
         }
     },
     "mapping": {
