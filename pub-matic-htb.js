@@ -24,6 +24,7 @@ var Partner = require('partner.js');
 var Size = require('size.js');
 var SpaceCamp = require('space-camp.js');
 var System = require('system.js');
+var Network = require('network.js');
 var Utilities = require('utilities.js');
 var EventsService;
 var RenderService;
@@ -65,8 +66,7 @@ function PubMaticHtb(configs) {
      * @private {object}
      */
     var __profile;
-
-    /**
+     /**
      * Instances of BidTransformer for transforming bids.
      *
      * @private {object}
@@ -327,16 +327,25 @@ function PubMaticHtb(configs) {
      * ---------------------------------- */
 
     /* =============================================================================
-     * STEP 5  | Rendering
+     * STEP 5  | Rendering Pixel
      * -----------------------------------------------------------------------------
      *
-     * This function will render the ad given. Usually need not be changed unless
-     * special render functionality is needed.
-     *
-     * @param  {Object} doc The document of the iframe where the ad will go.
-     * @param  {string} adm The ad code that came with the original demand.
+    */
+
+     /**
+     * This function will render the pixel given.
+     * @param  {string} pixelUrl Tracking pixel img url.
      */
-    function __render(doc, adm) {
+    function __renderPixel(pixelUrl) {
+        if (pixelUrl){
+            Network.img({
+                url: decodeURIComponent(pixelUrl),
+                method: 'GET',
+            });
+        }
+    }
+
+	function __render(doc, adm) {
         System.documentWrite(doc, adm);
     }
 
@@ -376,16 +385,21 @@ function PubMaticHtb(configs) {
          *
          */
 
-         /* ---------- Process adResponse and extract the bids into the bids array ------------*/
+        /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
         var bids = adResponse;
 
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
+
             var curReturnParcel = returnParcels[j];
 
-            /* ----------- Fill this out to find a matching bid for the current parcel ------------- */
+            var headerStatsInfo = {};
+            var htSlotId = curReturnParcel.htSlot.getId();
+            headerStatsInfo[htSlotId] = {};
+            headerStatsInfo[htSlotId][curReturnParcel.requestId] = [curReturnParcel.xSlotName];
+
             var curBid;
 
             for (var i = 0; i < bids.length; i++) {
@@ -398,15 +412,10 @@ function PubMaticHtb(configs) {
                  */
                 if (bids[i].impid === curReturnParcel.xSlotRef.bid_id) {
                     curBid = bids[i];
+                    bids.splice(i, 1);
                     break;
                 }
             }
-
-            /* ------------------------------------------------------------------------------------*/
-
-            /* HeaderStats information */
-            var headerStatsInfo = {};
-            headerStatsInfo[curReturnParcel.htSlot.getId()] = [curReturnParcel.xSlotName];
 
             /* No matching bid found so its a pass */
             if (!curBid) {
@@ -418,15 +427,46 @@ function PubMaticHtb(configs) {
             }
 
             /* ---------- Fill the bid variables with data from the bid response here. ------------*/
+
             /* Using the above variable, curBid, extract various information about the bid and assign it to
-            * these local variables */
+             * these local variables */
+
+            /* the bid price for the given slot */
+            var bidPrice = curBid.price;
+
+            /* the size of the given slot */
+            var bidSize = [Number(curBid.width), Number(curBid.height)];
+
+            /* the creative/adm for the given slot that will be rendered if is the winner.
+             * Please make sure the URL is decoded and ready to be document.written.
+             */
+            var bidCreative = curBid.adm;
 
             var bidPrice = curBid.price; /* the bid price for the given slot */
             var bidSize = [Number(curBid.w), Number(curBid.h)]; /* the size of the given slot */
             var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
             var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
+            /* explicitly pass */
+            var bidIsPass = bidPrice <= 0 ? true : false;
 
+            /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
+            * If firing a tracking pixel is not required or the pixel url is part of the adm,
+            * leave empty;
+            */
+            var pixelUrl = '';
             /* ---------------------------------------------------------------------------------------*/
+
+            curBid = null;
+            if (bidIsPass) {
+                //? if (DEBUG) {
+                Scribe.info(__profile.partnerId + ' returned pass for { id: ' + adResponse.id + ' }.');
+                //? }
+                if (__profile.enabledAnalytics.requestTime) {
+                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
+                }
+                curReturnParcel.pass = true;
+                continue;
+            }
 
             if (__profile.enabledAnalytics.requestTime) {
                 __baseClass._emitStatsEvent(sessionId, 'hs_slot_bid', headerStatsInfo);
@@ -435,6 +475,8 @@ function PubMaticHtb(configs) {
             curReturnParcel.size = bidSize;
             curReturnParcel.targetingType = 'slot';
             curReturnParcel.targeting = {};
+
+            var targetingCpm = '';
 
             //? if (FEATURES.GPT_LINE_ITEMS) {
             var targetingCpm = __bidTransformers.targeting.apply(bidPrice);
@@ -447,45 +489,33 @@ function PubMaticHtb(configs) {
                 curReturnParcel.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + '_' + targetingCpm];
             }
             curReturnParcel.targeting[__baseClass._configs.targetingKeys.id] = [curReturnParcel.requestId];
-
-            if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_SIZE) {
-                RenderService.registerAdByIdAndSize(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId, bidSize
-                );
-            } else if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_PRICE) {
-                RenderService.registerAdByIdAndPrice(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId,
-                    targetingCpm
-                );
-            }
             //? }
 
             //? if (FEATURES.RETURN_CREATIVE) {
             curReturnParcel.adm = bidCreative;
+            if (pixelUrl) {
+                curReturnParcel.winNotice = __renderPixel.bind(null, pixelUrl);
+            }
             //? }
 
             //? if (FEATURES.RETURN_PRICE) {
             curReturnParcel.price = Number(__bidTransformers.price.apply(bidPrice));
             //? }
 
+            var pubKitAdId = RenderService.registerAd({
+                sessionId: sessionId,
+                partnerId: __profile.partnerId,
+                adm: bidCreative,
+                requestId: curReturnParcel.requestId,
+                size: curReturnParcel.size,
+                price: targetingCpm,
+                dealId: bidDealId || undefined,
+                timeOfExpiry: __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
+                auxFn: __renderPixel,
+                auxArgs: [pixelUrl]
+            });
+
             //? if (FEATURES.INTERNAL_RENDER) {
-            var pubKitAdId = RenderService.registerAd(
-                sessionId,
-                __profile.partnerId,
-                __render, [bidCreative],
-                '',
-                __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
-            );
             curReturnParcel.targeting.pubKitAdId = pubKitAdId;
             //? }
         }
@@ -536,6 +566,7 @@ function PubMaticHtb(configs) {
                 pm: 'ix_pubm_cpm',
                 pmid: 'ix_pubm_dealid'
             },
+            bidUnitInCents: 1, // The bid price unit (in cents) the endpoint returns, please refer to the readme for details
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
             callbackType: Partner.CallbackTypes.CALLBACK_NAME, // Callback type, please refer to the readme for details
             architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
@@ -601,7 +632,6 @@ function PubMaticHtb(configs) {
         //? if (FEATURES.RETURN_PRICE) {
         __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
         //? }
-
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
             generateRequestObj: __generateRequestObj,
