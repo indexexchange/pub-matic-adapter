@@ -21,13 +21,16 @@ var libraryStubData = {
     },
     'browser.js': {
         getProtocol: function () {
-            return 'http:';
+            return this.topWindow.location.protocol;
+            //return "https:";
         },
         getReferrer: function () {
-            return 'localhost';
+            return this.topWindow.document.referrer;
+            //return 'localhost';
         },
         getUserAgent: function () {
-            return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
+            return this.topWindow.navigator.userAgent;
+            //return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
             return 'en-US';
@@ -137,6 +140,14 @@ var libraryStubData = {
         },
         now: function () {
             return (new Date()).getTime();
+        }
+    },
+    'utilities.js': {
+        isA: function (object, _t) {
+          return toString.call(object) === '[object ' + _t + ']';
+        },
+        isStr: function(object) {
+            return this.isA(object, "String");
         }
     },
     'utilities.js': {

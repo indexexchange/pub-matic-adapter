@@ -223,11 +223,36 @@ describe('parseResponse', function () {
         it('each parcel should have the correct values set', function () {
             var currRp,
                 currBid,
-                i, j;
-    
+                i, j,
+                __bidTransformers;
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
-            
+            var bidTransformerConfigs = {
+                //? if (FEATURES.GPT_LINE_ITEMS) {
+                targeting: {
+                    inputCentsMultiplier: 1, // Input is in cents
+                    outputCentsDivisor: 1, // Output as cents
+                    outputPrecision: 2, // With 0 decimal places
+                    roundingType: 'FLOOR', // jshint ignore:line
+                    floor: 1,
+                    buckets: [{
+                        max: 2000, // Up to 20 dollar (above 5 cents)
+                        step: 5 // use 5 cent increments
+                    }, {
+                        max: 5000, // Up to 50 dollars (above 20 dollars)
+                        step: 100 // use 1 dollar increments
+                    }]
+                },
+                //? }
+                //? if (FEATURES.RETURN_PRICE) {
+                price: {
+                    inputCentsMultiplier: 1, // Input is in cents
+                    outputCentsDivisor: 1, // Output as cents
+                    outputPrecision: 0, // With 0 decimal places
+                    roundingType: 'NONE',
+                },
+                //? }
+            };
             if (partnerConfig.bidTransformer) {
                 //? if (FEATURES.GPT_LINE_ITEMS) {
                 bidTransformerConfigs.targeting = partnerConfig.bidTransformer;
@@ -236,6 +261,14 @@ describe('parseResponse', function () {
                 bidTransformerConfigs.price.inputCentsMultiplier = partnerConfig.bidTransformer.inputCentsMultiplier;
                 //? }
             }
+
+            __bidTransformers = {};
+
+            //? if (FEATURES.GPT_LINE_ITEMS) {
+            __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
+            //? }
+            //? if (FEATURES.RETURN_PRICE) {
+            __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
 
             /* Get mock response data from our responseData file */
             mockData = responseData.bid.seatbid[0].bid;
@@ -422,10 +455,8 @@ describe('parseResponse', function () {
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
             for (var i = 0; i < returnParcels.length; i++) {
-
                 /* IF MRA, parse one parcel at a time */
                 if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
-
                 var result = inspector.validate({
                     type: 'object',
                     properties: {
@@ -524,7 +555,6 @@ describe('parseResponse', function () {
         });
         /* -----------------------------------------------------------------------*/
     });
-
 
     describe('render the winning creative: ', function() {
         it('should render the winning creative', function() {
