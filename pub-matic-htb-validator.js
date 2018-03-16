@@ -37,23 +37,67 @@ var partnerValidator = function (configs) {
     var result = Inspector.validate({
         type: 'object',
         properties: {
+            timeout: {
+                type: 'number'
+            },
+            publisherId: {
+                type: 'string'
+            },
+            lat: {
+                type: 'string',
+                optional: true
+            },
+            lon: {
+                type: 'string',
+                optional: true
+            },
+            yob: {
+                type: 'string',
+                optional: true
+            },
+            gender: {
+                type: 'string',
+                optional: true
+            },
+            kadfloor: {
+                type: 'string',
+                optional: true
+            },
+            profile: {
+                type: 'number',
+                optional: true
+            },
+            version: {
+                type: 'number',
+                optional: true
+            },
             xSlots: {
                 type: 'object',
                 properties: {
                     '*': {
                         type: 'object',
                         properties: {
-                            placementId: {
-                                type: 'string',
+                            adUnitName: {
+                                type: 'string'
+                            },
+                            sizes: {
+                                type: 'array',
                                 minLength: 1
+                            bid_id: {
+                                type: 'string',
+                                minLength: "1"
                             }
                         }
                     }
                 }
+            },
+            mapping: {
+                '*': {
+                    type: 'array'
+                }
             }
         }
     }, configs);
-
     if (!result.valid) {
         return result.format();
     }
