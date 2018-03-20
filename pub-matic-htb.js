@@ -16,7 +16,6 @@
 // Dependencies ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-var BidTransformer = require('bid-transformer.js');
 var Browser = require('browser.js');
 var Classify = require('classify.js');
 var Constants = require('constants.js');
@@ -66,12 +65,6 @@ function PubMaticHtb(configs) {
      * @private {object}
      */
     var __profile;
-     /**
-     * Instances of BidTransformer for transforming bids.
-     *
-     * @private {object}
-     */
-    var __bidTransformers;
 
     /* =====================================
      * Functions
@@ -106,8 +99,8 @@ function PubMaticHtb(configs) {
         });
 
         return retArr;
-    }	
-	
+    }
+
 	var _parseSlotParam = (paramName, paramValue) => {
       if (!Utilities.isStr(paramValue)) {
         paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
@@ -127,7 +120,7 @@ function PubMaticHtb(configs) {
           return paramValue;
       }
     }
- 
+
     var __populateImprObject = returnParcels => {
         let retArr = [],
             impObj = {},
@@ -158,7 +151,7 @@ function PubMaticHtb(configs) {
     }
 
     var __populateSiteObject = publisherId => {
-        var retObj = 
+        var retObj =
         {
             page: Browser.topWindow.href,
             ref: Browser.topWindow.document.referrer,
@@ -172,9 +165,9 @@ function PubMaticHtb(configs) {
     }
 
     var __populateDeviceInfo = rp => {
-        var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' || 
-                    Browser.topWindow.navigator.doNotTrack == '1' || 
-                    Browser.topWindow.navigator.msDoNotTrack == '1') 
+        var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' ||
+                    Browser.topWindow.navigator.doNotTrack == '1' ||
+                    Browser.topWindow.navigator.msDoNotTrack == '1')
                     ? 1 : 0;
         return {
             ua: Browser.getUserAgent(),
@@ -206,13 +199,13 @@ function PubMaticHtb(configs) {
         ext.wrapper = {};
         ext.wrapper.profile = rp.profile || undefined; // remove ? check if mandatory
         ext.wrapper.version = rp.version || undefined; // remove ? check if mandatory
-        ext.wrapper.wiid = rp.wiid || undefined; // 
+        ext.wrapper.wiid = rp.wiid || undefined; //
         //ext.wrapper.wv = Constants.REPO_AND_VERSION;
         ext.wrapper.transactionId = rp.transactionId;
         ext.wrapper.wp = 'pbjs' ;
-        
-        return ext;   
-    }    
+
+        return ext;
+    }
 	/**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
@@ -285,7 +278,7 @@ function PubMaticHtb(configs) {
         callbackId = System.generateUniqueId(),
         //baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?';
         baseUrl = '//hbopenbid.pubmatic.com/translator?';
-        payload = { 
+        payload = {
             id: '' + new Date().getTime(), // str | mandatory
             at: 1, // int | mandatory
             cur: ['USD'], // [str] | opt
@@ -296,7 +289,7 @@ function PubMaticHtb(configs) {
             ext: __populateExtObject(returnParcels[0]), // not required?? - to be checked
             secure: Browser.getProtocol() === "https:" ? 1 : 0
         }
-        
+
         /* -------------------------------------------------------------------------- */
         return {
             url: baseUrl,
@@ -345,7 +338,7 @@ function PubMaticHtb(configs) {
         }
     }
 
-	function __render(doc, adm) {
+    function __render(doc, adm) {
         System.documentWrite(doc, adm);
     }
 
@@ -479,7 +472,7 @@ function PubMaticHtb(configs) {
             var targetingCpm = '';
 
             //? if (FEATURES.GPT_LINE_ITEMS) {
-            var targetingCpm = __bidTransformers.targeting.apply(bidPrice);
+            var targetingCpm = __baseClass._bidTransformers.targeting.apply(bidPrice);
             var sizeKey = Size.arrayToString(curReturnParcel.size);
 
             if (bidDealId) {
@@ -499,7 +492,7 @@ function PubMaticHtb(configs) {
             //? }
 
             //? if (FEATURES.RETURN_PRICE) {
-            curReturnParcel.price = Number(__bidTransformers.price.apply(bidPrice));
+            curReturnParcel.price = Number(__baseClass._bidTransformers.price.apply(bidPrice));
             //? }
 
             var pubKitAdId = RenderService.registerAd({
@@ -582,56 +575,6 @@ function PubMaticHtb(configs) {
         }
         //? }
 
-        /*
-         * Adjust the below bidTransformerConfigs variable to match the units the adapter
-         * sends bids in and to match line item setup. This configuration variable will
-         * be used to transform the bids going into DFP.
-         */
-
-        /* - Please fill out this bid trasnformer according to your module's bid response format - */
-        var bidTransformerConfigs = {
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            targeting: {
-                inputCentsMultiplier: 1, // Input is in cents
-                outputCentsDivisor: 1, // Output as cents
-                outputPrecision: 0, // With 0 decimal places
-                roundingType: 'FLOOR', // jshint ignore:line
-                floor: 0,
-                buckets: [{
-                    max: 2000, // Up to 20 dollar (above 5 cents)
-                    step: 5 // use 5 cent increments
-                }, {
-                    max: 5000, // Up to 50 dollars (above 20 dollars)
-                    step: 100 // use 1 dollar increments
-                }]
-            },
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            price: {
-                inputCentsMultiplier: 1, // Input is in cents
-                outputCentsDivisor: 1, // Output as cents
-                outputPrecision: 0, // With 0 decimal places
-                roundingType: 'NONE',
-            },
-            //? }
-        };
-        if (configs.bidTransformer) {
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            bidTransformerConfigs.targeting = configs.bidTransformer;
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            bidTransformerConfigs.price.inputCentsMultiplier = configs.bidTransformer.inputCentsMultiplier;
-            //? }
-        }
-
-        __bidTransformers = {};
-
-        //? if (FEATURES.GPT_LINE_ITEMS) {
-        __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
-        //? }
-        //? if (FEATURES.RETURN_PRICE) {
-        __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
-        //? }
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
             generateRequestObj: __generateRequestObj,
@@ -670,7 +613,6 @@ function PubMaticHtb(configs) {
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
         adResponseCallback: adResponseCallback,
-        bidTransformer: __bidTransformers
         //? }
     };
 
