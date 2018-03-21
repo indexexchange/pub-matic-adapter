@@ -50,7 +50,7 @@ describe('Partner Profile', function () {
             properties: {
                 partnerId: {
                     type: 'string',
-                    eq: consts.PUBMATIC_PARTNER_ID
+                    eq: "PubMaticHtb"
                 },
                 namespace: {
                     type: 'string',
@@ -66,7 +66,7 @@ describe('Partner Profile', function () {
                 },
                 targetingType: {
                     type: 'string',
-                    eq: consts.SLOT
+                    eq: "slot"
                 },
                 enabledAnalytics: {
                     type: 'object',
