@@ -150,14 +150,6 @@ var libraryStubData = {
             return this.isA(object, "String");
         }
     },
-    'utilities.js': {
-        isA: function (object, _t) {
-          return toString.call(object) === '[object ' + _t + ']';
-        },
-        isStr: function(object) {
-            return this.isA(object, "String");
-        }
-    },
     'whoopsie.js': function () {
         return null;
     },
