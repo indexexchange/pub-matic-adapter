@@ -63,13 +63,13 @@ function generateReturnParcels(profile, partnerConfig) {
  *
  * @param {object[]} mockData - mock response data
  */
-function getExpectedAdEntry(mockData, bidTransformer) {
+function getExpectedAdEntry(mockData) {
     var expectedAdEntry = [];
 
     for(var i = 0; i < mockData.length; i++) {
         expectedAdEntry[i] = {};
 
-        expectedAdEntry[i].price = bidTransformer.apply(mockData[i].price);
+        expectedAdEntry[i].price = mockData[i].price;
         expectedAdEntry[i].dealId = mockData[i].dealid;
     }
 
@@ -91,7 +91,6 @@ describe('parseResponse', function () {
     var partnerConfig = require('./support/mockPartnerConfig.json');
     var expect = require('chai').expect;
     var Size = libraryStubData['size.js'];
-    var BidTransformer = libraryStubData['bid-transformer.js'];
     var fs = require('fs');
     var parseJson = require('parse-json');
     var path = require('path');
@@ -110,38 +109,6 @@ describe('parseResponse', function () {
     var returnParcels;
     var result, expectedValue, mockData, returnParcels, responseData;
     var registerAd;
-    var bidTransformerConfigs = {
-        //? if (FEATURES.GPT_LINE_ITEMS) {
-        targeting: {
-            inputCentsMultiplier: 1, // Input is in cents
-            outputCentsDivisor: 1, // Output as cents
-            outputPrecision: 2, // With 0 decimal places
-            roundingType: 'FLOOR', // jshint ignore:line
-            floor: 1,
-            buckets: [{
-                max: 2000, // Up to 20 dollar (above 5 cents)
-                step: 5 // use 5 cent increments
-            }, {
-                max: 5000, // Up to 50 dollars (above 20 dollars)
-                step: 100 // use 1 dollar increments
-            }]
-        },
-        //? }
-        //? if (FEATURES.RETURN_PRICE) {
-        price: {
-            inputCentsMultiplier: 1, // Input is in cents
-            outputCentsDivisor: 1, // Output as cents
-            outputPrecision: 0, // With 0 decimal places
-            roundingType: 'NONE',
-        },
-        //? }
-    };
-    var __bidTransformers = {};
-    //? if (FEATURES.GPT_LINE_ITEMS) {
-    __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
-    //? }
-    //? if (FEATURES.RETURN_PRICE) {
-    __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);;
 
     describe('should correctly parse bids:', function () {
 
@@ -223,52 +190,8 @@ describe('parseResponse', function () {
         it('each parcel should have the correct values set', function () {
             var currRp,
                 currBid,
-                i, j,
-                __bidTransformers;
+                i, j;
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
-
-            var bidTransformerConfigs = {
-                //? if (FEATURES.GPT_LINE_ITEMS) {
-                targeting: {
-                    inputCentsMultiplier: 1, // Input is in cents
-                    outputCentsDivisor: 1, // Output as cents
-                    outputPrecision: 2, // With 0 decimal places
-                    roundingType: 'FLOOR', // jshint ignore:line
-                    floor: 1,
-                    buckets: [{
-                        max: 2000, // Up to 20 dollar (above 5 cents)
-                        step: 5 // use 5 cent increments
-                    }, {
-                        max: 5000, // Up to 50 dollars (above 20 dollars)
-                        step: 100 // use 1 dollar increments
-                    }]
-                },
-                //? }
-                //? if (FEATURES.RETURN_PRICE) {
-                price: {
-                    inputCentsMultiplier: 1, // Input is in cents
-                    outputCentsDivisor: 1, // Output as cents
-                    outputPrecision: 0, // With 0 decimal places
-                    roundingType: 'NONE',
-                },
-                //? }
-            };
-            if (partnerConfig.bidTransformer) {
-                //? if (FEATURES.GPT_LINE_ITEMS) {
-                bidTransformerConfigs.targeting = partnerConfig.bidTransformer;
-                //? }
-                //? if (FEATURES.RETURN_PRICE) {
-                bidTransformerConfigs.price.inputCentsMultiplier = partnerConfig.bidTransformer.inputCentsMultiplier;
-                //? }
-            }
-
-            __bidTransformers = {};
-
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
 
             /* Get mock response data from our responseData file */
             mockData = responseData.bid.seatbid[0].bid;
@@ -289,7 +212,7 @@ describe('parseResponse', function () {
                 for(j=0; j<mockData.length; j++) {
                     currBid = mockData[j];
                     if (currBid.impid === currRp.xSlotRef.bid_id) {
-                        expect(currRp.price).to.equal(__bidTransformers.price.apply(currBid.price));
+                        expect(currRp.price).to.equal(currBid.price);
                         expect(currRp.targetingType).to.equal('slot');
                         expect(currRp.adm).to.equal(currBid.adm);
                         expect(currRp.targeting).to.not.equal(undefined);
@@ -297,7 +220,7 @@ describe('parseResponse', function () {
                         var tempValue,
                             sizeKey = Size.arrayToString([currBid.w, currBid.h]),
                             bidDealId = currBid.dealid,
-                            targetingCpm = __bidTransformers.targeting.apply(currBid.price),
+                            targetingCpm = currBid.price,
                             bidDealId = currBid.dealid;
                         tempValue = sizeKey + "_" + targetingCpm;
 
@@ -308,7 +231,7 @@ describe('parseResponse', function () {
                             expect(currRp.targeting[partnerModule.profile.targetingKeys.pm][0]).to.be(tempValue);
                             tempValue =  sizeKey + "_" + bidDealId;
                             expect(currRp.targeting[partnerModule.profile.targetingKeys.pmid]).to.be.an('array').with.length.above(0);
-                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pmid][0]).to.be(tempValue);    
+                            expect(currRp.targeting[partnerModule.profile.targetingKeys.pmid][0]).to.be(tempValue);
                         } else {
                             expect(currRp.targeting[partnerModule.profile.targetingKeys.om]).to.be.an('array').with.length.above(0);
                             expect(currRp.targeting[partnerModule.profile.targetingKeys.om][0]).to.equal(tempValue);
@@ -324,7 +247,7 @@ describe('parseResponse', function () {
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
-                expectedAdEntry = getExpectedAdEntry(mockData, __bidTransformers.price);
+                expectedAdEntry = getExpectedAdEntry(mockData);
 
                 partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -335,7 +258,7 @@ describe('parseResponse', function () {
             } else if (partnerProfile.architecture === 0) {
                 /* IF MRA, parse one parcel at a time */
                 for (var i = 0; i < mockData.length; i++) {
-                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i], __bidTransformers.price);
+                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i]);
 
                     partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
 
@@ -532,7 +455,7 @@ describe('parseResponse', function () {
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
-                expectedAdEntry = getExpectedAdEntry(mockData, __bidTransformers.price);
+                expectedAdEntry = getExpectedAdEntry(mockData);
 
                 partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -543,7 +466,7 @@ describe('parseResponse', function () {
             } else if (partnerProfile.architecture === 0) {
                 /* IF MRA, parse one parcel at a time */
                 for (var i = 0; i < mockData.length; i++) {
-                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i], __bidTransformers.price);
+                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i]);
 
                     partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
 
@@ -601,7 +524,7 @@ describe('parseResponse', function () {
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
                 if(mockData) {
-                    expectedAdEntry = getExpectedAdEntry(mockData, __bidTransformers.price);
+                    expectedAdEntry = getExpectedAdEntry(mockData);
 
                     partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -613,7 +536,7 @@ describe('parseResponse', function () {
             } else if (partnerProfile.architecture === 0) {
                 /* IF MRA, parse one parcel at a time */
                 for (var i = 0; i < mockData.length; i++) {
-                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i], __bidTransformers.price);
+                    expectedAdEntry[i] = getExpectedAdEntry(mockData[i]);
 
                     partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
 
