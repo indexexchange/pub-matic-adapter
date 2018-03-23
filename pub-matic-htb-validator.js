@@ -83,6 +83,7 @@ var partnerValidator = function (configs) {
                             sizes: {
                                 type: 'array',
                                 minLength: 1
+                            },
                             bid_id: {
                                 type: 'string',
                                 minLength: "1"

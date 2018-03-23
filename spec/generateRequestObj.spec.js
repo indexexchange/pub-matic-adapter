@@ -55,9 +55,9 @@ function generateReturnParcels(profile, partnerConfig) {
                 xSlotRef: partnerConfig.xSlots[xSlotName],
                 requestId: system.generateUniqueId(),
                 bid_id: partnerConfig.xSlots[xSlotName].bid_id,
-                
+
                 /* Pubmatic specific values. required in the api request */
-                lat: partnerConfig.lat || undefined, 
+                lat: partnerConfig.lat || undefined,
                 lon: partnerConfig.lon || undefined,
                 yob: partnerConfig.yob || undefined,
                 gender: partnerConfig.gender || undefined,
@@ -94,7 +94,7 @@ describe('generateRequestObj', function () {
     /* Generate dummy return parcels based on MRA partner profile */
     returnParcels,
     requestObject,
-    endpoint = "//hbopenbid.pubmatic.com/translator?";
+    endpoint = 'http://hbopenbid.pubmatic.com/translator?source=index-client';
 
     /* Generate a request object using generated mock return parcels. */
     returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
@@ -140,11 +140,11 @@ describe('generateRequestObj', function () {
                 * request params, url, etc.
                 */
             var domain = browser.topWindow.location.hostname;
-            var dnt = (browser.topWindow.navigator.doNotTrack == 'yes' || 
-                    browser.topWindow.navigator.doNotTrack == '1' || 
-                    browser.topWindow.navigator.msDoNotTrack == '1') 
+            var dnt = (browser.topWindow.navigator.doNotTrack == 'yes' ||
+                    browser.topWindow.navigator.doNotTrack == '1' ||
+                    browser.topWindow.navigator.msDoNotTrack == '1')
                     ? 1 : 0;
-            
+
             expect(requestObject).to.exist;
             expect(requestObject.url).to.exist;
             expect(requestObject.url).to.equal(endpoint)
@@ -158,7 +158,7 @@ describe('generateRequestObj', function () {
             expect(payload.cur[0]).to.equal('USD');
 
             expect(payload.imp).to.exist.and.to.be.an('array').with.length.above(0);
-            
+
             //test cases for payload.site object
             expect(payload.site).to.exist.and.to.be.an('object');
             expect(payload.site.page).to.and.equal(browser.topWindow.href);
@@ -167,7 +167,7 @@ describe('generateRequestObj', function () {
             expect(payload.site.publisher.id).to.exist.and.to.equal(partnerConfig.publisherId);
             expect(payload.site.publisher.domain).to.exist.and.to.equal(domain);
             expect(payload.site.domain).to.exist.and.to.equal(domain);
-            
+
             //test cases for payload.device object
             expect(payload.device).to.exist.and.to.be.an('object');
             expect(payload.device.ua).to.exist.and.to.equal(browser.getUserAgent());

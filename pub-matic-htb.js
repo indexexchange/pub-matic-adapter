@@ -102,7 +102,7 @@ function PubMaticHtb(configs) {
     }
 
 	var _parseSlotParam = (paramName, paramValue) => {
-      if (!Utilities.isStr(paramValue)) {
+      if (!Utilities.isString(paramValue)) {
         paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
         return undefined;
       }
@@ -119,35 +119,6 @@ function PubMaticHtb(configs) {
         default:
           return paramValue;
       }
-    }
-
-    var __populateImprObject = returnParcels => {
-        let retArr = [],
-            impObj = {},
-            sizes = [];
-
-        returnParcels.forEach(rp => {
-            impObj = {
-                id: rp.bid_id || System.generateUniqueId(),
-                tagId: rp.xSlotRef.adUnitName,
-                bidFloor: _parseSlotParam('kadfloor', rp.kadfloor),
-                ext: {
-                    pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
-                }
-            }
-            sizes = rp.xSlotRef.sizes[0];
-            if (sizes.length > 0) {
-                impObj.banner = {
-                    h: sizes[1],
-                    w: sizes[0]
-                }
-            } else {
-                console.log("PubMatic: Error in sizes array");
-            }
-            retArr.push(impObj);
-        });
-
-        return retArr;
     }
 
     var __populateSiteObject = publisherId => {
@@ -276,8 +247,7 @@ function PubMaticHtb(configs) {
         /* ---------------------- PUT CODE HERE ------------------------------------ */
         var payload = {},
         callbackId = System.generateUniqueId(),
-        //baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?';
-        baseUrl = '//hbopenbid.pubmatic.com/translator?';
+        baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
         payload = {
             id: '' + new Date().getTime(), // str | mandatory
             at: 1, // int | mandatory
@@ -338,10 +308,6 @@ function PubMaticHtb(configs) {
         }
     }
 
-    function __render(doc, adm) {
-        System.documentWrite(doc, adm);
-    }
-
     /**
      * Parses and extracts demand from adResponse according to the adapter and then attaches it
      * to the corresponding bid's returnParcel in the correct format using targeting keys.
@@ -356,8 +322,6 @@ function PubMaticHtb(configs) {
      * attached to each one of the objects for which the demand was originally requested for.
      */
     function __parseResponse(sessionId, adResponse, returnParcels) {
-
-        var unusedReturnParcels = returnParcels.slice();
 
         /* =============================================================================
          * STEP 4  | Parse & store demand response
@@ -435,9 +399,6 @@ function PubMaticHtb(configs) {
              */
             var bidCreative = curBid.adm;
 
-            var bidPrice = curBid.price; /* the bid price for the given slot */
-            var bidSize = [Number(curBid.w), Number(curBid.h)]; /* the size of the given slot */
-            var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
             var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
             /* explicitly pass */
             var bidIsPass = bidPrice <= 0 ? true : false;
@@ -472,7 +433,7 @@ function PubMaticHtb(configs) {
             var targetingCpm = '';
 
             //? if (FEATURES.GPT_LINE_ITEMS) {
-            var targetingCpm = __baseClass._bidTransformers.targeting.apply(bidPrice);
+            targetingCpm = __baseClass._bidTransformers.targeting.apply(bidPrice);
             var sizeKey = Size.arrayToString(curReturnParcel.size);
 
             if (bidDealId) {
@@ -547,10 +508,6 @@ function PubMaticHtb(configs) {
                 rateLimiting: {
                     enabled: !1,
                     value: 0
-                },
-                prefetchDisabled: {
-                    enabled: !0,
-                    value: 0
                 }
             },
             targetingKeys: { // Targeting keys for demand, should follow format ix_{statsId}_id
@@ -568,8 +525,8 @@ function PubMaticHtb(configs) {
         /* ---------------------------------------------------------------------------------------*/
 
         //? if (DEBUG) {
-        // What is the need for this: var results = PartnerSpecificValidator(configs);
-        var results = PartnerSpecificValidator(configs);
+        var results = ConfigValidators.partnerBaseConfig(configs) || PartnerSpecificValidator(configs);
+
         if (results) {
             throw Whoopsie('INVALID_CONFIG', results);
         }
@@ -609,7 +566,6 @@ function PubMaticHtb(configs) {
          * ---------------------------------- */
 
         //? if (TEST) {
-        render: __render,
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
         adResponseCallback: adResponseCallback,
