@@ -479,29 +479,6 @@ describe('parseResponse', function () {
         /* -----------------------------------------------------------------------*/
     });
 
-    describe('render the winning creative: ', function() {
-        it('should render the winning creative', function() {
-            mockData = responseData.bid.seatbid[0].bid;
-
-            /* IF SRA, parse all parcels at once */
-            if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
-
-            for (var i = 0; i < returnParcels.length; i++) {
-
-                /* IF MRA, parse one parcel at a time */
-                if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
-
-                /* Add test cases to test against each of the parcel's set fields
-                 * to make sure the response was parsed correctly.
-                 *
-                 * The parcels have already been parsed and should contain all the
-                 * necessary demand.
-                 */
-            }
-            partnerModule.render(returnParcels[0].xSlotRef.adUnitName, returnParcels[0].adm);
-		});
-    });
-
     describe('should correctly parse dealid when no price was sent back: ', function () {
 
         beforeEach(function () {

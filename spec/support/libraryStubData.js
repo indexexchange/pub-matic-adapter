@@ -5,32 +5,15 @@ var MockBrowser = require('mock-browser').mocks.MockBrowser;
 var mock = new MockBrowser();
 
 var libraryStubData = {
-
-    'bid-transformer.js': function (config) {
-        return {
-            apply: function (price) {
-                switch (config.roundingType) {
-                    case 'FLOOR':
-                        return Math.floor(price);
-                    case 'NONE':
-                    default:
-                        return Math.round(price);
-                }
-            }
-        }
-    },
     'browser.js': {
         getProtocol: function () {
-            return this.topWindow.location.protocol;
-            //return "https:";
+            return "http:";
         },
         getReferrer: function () {
-            return this.topWindow.document.referrer;
-            //return 'localhost';
+            return 'localhost';
         },
         getUserAgent: function () {
-            return this.topWindow.navigator.userAgent;
-            //return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
+            return 'Mozilla/5.0 (Windows; U; Windows NT 6.1; rv:2.2) Gecko/20110201';
         },
         getLanguage: function () {
             return 'en-US';
@@ -146,7 +129,7 @@ var libraryStubData = {
         isA: function (object, _t) {
           return toString.call(object) === '[object ' + _t + ']';
         },
-        isStr: function(object) {
+        isString: function(object) {
             return this.isA(object, "String");
         }
     },
