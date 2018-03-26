@@ -198,6 +198,9 @@ describe('parseResponse', function () {
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
+            //reset mockdata here
+            mockData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            mockData = mockData.bid.seatbid[0].bid;
             for (i = 0; i < returnParcels.length; i++) {
                 currRp = returnParcels[i];
                 /* IF MRA, parse one parcel at a time */
