@@ -392,7 +392,7 @@ function PubMaticHtb(configs) {
             var bidPrice = curBid.price;
 
             /* the size of the given slot */
-            var bidSize = [Number(curBid.width), Number(curBid.height)];
+            var bidSize = [Number(curBid.w), Number(curBid.h)];
 
             /* the creative/adm for the given slot that will be rendered if is the winner.
              * Please make sure the URL is decoded and ready to be document.written.
