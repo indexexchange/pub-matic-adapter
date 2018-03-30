@@ -72,12 +72,12 @@ function PubMaticHtb(configs) {
 
     /* Utilities
      * ---------------------------------- */
-     var __populateImprObject = returnParcels => {
-        let retArr = [],
+     function __populateImprObject(returnParcels) {
+        var retArr = [],
             impObj = {},
             sizes = [];
 
-        returnParcels.forEach(rp => {
+        returnParcels.forEach(function(rp) {
             impObj = {
                 id: rp.bid_id || System.generateUniqueId(),
                 tagId: rp.xSlotRef.adUnitName,
@@ -97,11 +97,10 @@ function PubMaticHtb(configs) {
             }
             retArr.push(impObj);
         });
-
         return retArr;
     }
 
-	var _parseSlotParam = (paramName, paramValue) => {
+	function _parseSlotParam (paramName, paramValue) {
       if (!Utilities.isString(paramValue)) {
         paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
         return undefined;
@@ -121,7 +120,7 @@ function PubMaticHtb(configs) {
       }
     }
 
-    var __populateSiteObject = publisherId => {
+    function __populateSiteObject(publisherId) {
         var retObj =
         {
             page: Browser.topWindow.href,
@@ -135,7 +134,7 @@ function PubMaticHtb(configs) {
         return retObj;
     }
 
-    var __populateDeviceInfo = rp => {
+    function __populateDeviceInfo(rp){
         var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' ||
                     Browser.topWindow.navigator.doNotTrack == '1' ||
                     Browser.topWindow.navigator.msDoNotTrack == '1')
@@ -154,7 +153,7 @@ function PubMaticHtb(configs) {
         }
     }
 
-    var __populateUserInfo = rp => {
+    function __populateUserInfo(rp) {
         return {
             gender: rp.gender ? rp.gender.trim() : undefined,
             geo: {
@@ -165,7 +164,7 @@ function PubMaticHtb(configs) {
         };
     }
 
-    var __populateExtObject = rp => {
+    function __populateExtObject(rp) {
         var ext = {};
         ext.wrapper = {};
         ext.wrapper.profile = rp.profile || undefined; // remove ? check if mandatory
@@ -261,6 +260,7 @@ function PubMaticHtb(configs) {
         }
 
         /* -------------------------------------------------------------------------- */
+        console.log(JSON.stringify(payload));
         return {
             url: baseUrl,
             data: payload,
@@ -359,6 +359,14 @@ function PubMaticHtb(configs) {
 
             var curBid;
 
+            if(!bids || bids.length === 0) {
+                if (__profile.enabledAnalytics.requestTime) {
+                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
+                }
+                curReturnParcel.pass = true;
+                continue;
+            }
+
             for (var i = 0; i < bids.length; i++) {
 
                 /**
@@ -406,7 +414,7 @@ function PubMaticHtb(configs) {
             /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
             * If firing a tracking pixel is not required or the pixel url is part of the adm,
             * leave empty;
-            */
+            */ //need to confirm on this part
             var pixelUrl = '';
             /* ---------------------------------------------------------------------------------------*/
 
