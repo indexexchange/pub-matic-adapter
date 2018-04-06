@@ -364,7 +364,7 @@ function PubMaticHtb(configs) {
             var curBid;
 
             if(!bids
-              || (Object.prototype.toString.call(bids) !== '[object Array]')
+              || !Utilities.isArray(bids)
               || bids.length === 0
             ) {
                 if (__profile.enabledAnalytics.requestTime) {
