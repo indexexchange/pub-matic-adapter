@@ -131,6 +131,9 @@ var libraryStubData = {
         },
         isString: function(object) {
             return this.isA(object, "String");
+        },
+        isArray: function (object) {
+            return Object.prototype.toString.call(object) === '[object Array]';
         }
     },
     'whoopsie.js': function () {
