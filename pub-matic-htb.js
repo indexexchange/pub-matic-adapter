@@ -108,7 +108,12 @@ function PubMaticHtb(configs) {
 
       switch (paramName) {
         case 'pmzoneid':
-          return paramValue.split(',').slice(0, 50).map(id => id.trim()).join();
+          return paramValue.split(',')
+                    .slice(0, 50)
+                    .map(function(id) {
+                      return id.trim()
+                    })
+                    .join();
         case 'kadfloor':
         case 'lat':
         case 'lon':
@@ -260,7 +265,6 @@ function PubMaticHtb(configs) {
         }
 
         /* -------------------------------------------------------------------------- */
-        console.log(JSON.stringify(payload));
         return {
             url: baseUrl,
             data: payload,
@@ -359,7 +363,10 @@ function PubMaticHtb(configs) {
 
             var curBid;
 
-            if(!bids || bids.length === 0) {
+            if(!bids
+              || (Object.prototype.toString.call(bids) !== '[object Array]')
+              || bids.length === 0
+            ) {
                 if (__profile.enabledAnalytics.requestTime) {
                     __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
                 }
@@ -414,7 +421,7 @@ function PubMaticHtb(configs) {
             /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
             * If firing a tracking pixel is not required or the pixel url is part of the adm,
             * leave empty;
-            */ //need to confirm on this part
+            */
             var pixelUrl = '';
             /* ---------------------------------------------------------------------------------------*/
 
