@@ -55,15 +55,6 @@ function generateReturnParcels(profile, partnerConfig) {
                 xSlotRef: partnerConfig.xSlots[xSlotName],
                 requestId: system.generateUniqueId(),
                 bid_id: partnerConfig.xSlots[xSlotName].bid_id,
-
-                /* Pubmatic specific values. required in the api request */
-                lat: partnerConfig.lat || undefined,
-                lon: partnerConfig.lon || undefined,
-                yob: partnerConfig.yob || undefined,
-                gender: partnerConfig.gender || undefined,
-                kadfloor: partnerConfig.kadfloor || undefined,
-                profile: partnerConfig.profile || undefined,
-                version: partnerConfig.version || undefined
             });
         }
     }
@@ -191,8 +182,13 @@ describe('generateRequestObj', function () {
             //test cases for payload.ext object
             expect(payload.ext).to.exist;
             expect(payload.ext.wrapper).to.exist.and.to.be.an('object');
-            expect(payload.ext.wrapper.profile).to.exist.and.to.equal(partnerConfig.profile);
-            expect(payload.ext.wrapper.version).to.exist.and.to.equal(partnerConfig.version);
+            if (payload.ext.wrapper.profile) {
+                expect(payload.ext.wrapper.profile).to.equal(partnerConfig.profile);
+            }
+
+            if (payload.ext.wrapper.version) {
+                expect(payload.ext.wrapper.version).to.equal(partnerConfig.version);
+            }
             expect(payload.ext.wrapper.wp).to.exist.and.to.equal('pbjs');
 
         });
@@ -214,7 +210,7 @@ describe('generateRequestObj', function () {
                         noMatch = false;
                         sizes = rp.xSlotRef.sizes[0];
                         expect(obj.tagId).to.equal(rp.xSlotRef.adUnitName);
-                        expect(obj.bidFloor).to.equal(parseFloat(rp.kadfloor));
+                        expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
                         expect(obj.ext).to.exist.and.to.be.an('object');
                         expect(obj.banner).to.exist.and.to.be.an('object');
                         sizes = rp.xSlotRef.sizes[0]

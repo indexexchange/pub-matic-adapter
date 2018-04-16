@@ -65,6 +65,7 @@ function PubMaticHtb(configs) {
      * @private {object}
      */
     var __profile;
+    var __globalConfigs;
 
     /* =====================================
      * Functions
@@ -81,7 +82,7 @@ function PubMaticHtb(configs) {
             impObj = {
                 id: rp.bid_id || System.generateUniqueId(),
                 tagId: rp.xSlotRef.adUnitName,
-                bidFloor: _parseSlotParam('kadfloor', rp.kadfloor),
+                bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
                 }
@@ -152,31 +153,31 @@ function PubMaticHtb(configs) {
             w: Browser.getScreenWidth(),
             language: Browser.getLanguage(),
             geo: {
-                lat: _parseSlotParam('lat', rp.lat),
-                lon: _parseSlotParam('lon', rp.lon),
+                lat: _parseSlotParam('lat', __globalConfigs.lat),
+                lon: _parseSlotParam('lon', __globalConfigs.lon),
             }
         }
     }
 
     function __populateUserInfo(rp) {
         return {
-            gender: rp.gender ? rp.gender.trim() : undefined,
+            gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
-                lat: _parseSlotParam('lat', rp.lat),
-                lon: _parseSlotParam('lon', rp.lon),
+                lat: _parseSlotParam('lat', __globalConfigs.lat),
+                lon: _parseSlotParam('lon', __globalConfigs.lon),
             },
-            yob: _parseSlotParam('yob', rp.yob)
+            yob: _parseSlotParam('yob', __globalConfigs.yob)
         };
     }
 
     function __populateExtObject(rp) {
         var ext = {};
         ext.wrapper = {};
-        ext.wrapper.profile = rp.profile || undefined; // remove ? check if mandatory
-        ext.wrapper.version = rp.version || undefined; // remove ? check if mandatory
-        ext.wrapper.wiid = rp.wiid || undefined; //
+        ext.wrapper.profile = __globalConfigs.profile || undefined; // remove ? check if mandatory
+        ext.wrapper.version = __globalConfigs.version || undefined; // remove ? check if mandatory
+        ext.wrapper.wiid = __globalConfigs.wiid || undefined; //
         //ext.wrapper.wv = Constants.REPO_AND_VERSION;
-        ext.wrapper.transactionId = rp.transactionId;
+        ext.wrapper.transactionId = __globalConfigs.transactionId;
         ext.wrapper.wp = 'pbjs' ;
 
         return ext;
@@ -257,7 +258,7 @@ function PubMaticHtb(configs) {
             at: 1, // int | mandatory
             cur: ['USD'], // [str] | opt
             imp: __populateImprObject(returnParcels), // obj | mandatory - pending
-            site: __populateSiteObject(returnParcels[0].pubId), //// obj | opt
+            site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
             device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
             user: __populateUserInfo(returnParcels[0]), // obj | opt
             ext: __populateExtObject(returnParcels[0]), // not required?? - to be checked
@@ -546,7 +547,17 @@ function PubMaticHtb(configs) {
             throw Whoopsie('INVALID_CONFIG', results);
         }
         //? }
-
+        __globalConfigs = {
+            pubId: configs.publisherId,
+            /* Pubmatic specific values. required in the api request */
+            lat: configs.lat || undefined,
+            lon: configs.lon || undefined,
+            yob: configs.yob || undefined,
+            gender: configs.gender || undefined,
+            kadfloor: configs.kadfloor || undefined,
+            profile: configs.profile || undefined,
+            version: configs.version || undefined
+        }
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
             generateRequestObj: __generateRequestObj,
