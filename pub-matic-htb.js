@@ -269,7 +269,11 @@ function PubMaticHtb(configs) {
         return {
             url: baseUrl,
             data: payload,
-            callbackId: callbackId
+            callbackId: callbackId,
+            networkParamOverrides: {
+              method: 'POST',
+              contentType: 'text/plain'
+            }
         };
     }
 
