@@ -110,7 +110,10 @@ describe('generateRequestObj', function () {
                     callbackId: {
                         type: 'string',
                         minLength: 1
-                    }
+                    },
+                    networkParamOverrides: {
+			type: 'object'
+		    }
                 }
             }, requestObject);
 
