@@ -80,7 +80,7 @@ function PubMaticHtb(configs) {
 
         returnParcels.forEach(function(rp) {
             impObj = {
-                id: rp.bid_id || System.generateUniqueId(),
+                id: rp.xSlotRef.bid_id || System.generateUniqueId(),
                 tagId: rp.xSlotRef.adUnitName,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
