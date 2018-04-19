@@ -353,7 +353,11 @@ function PubMaticHtb(configs) {
 
         /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
-        var bids = adResponse;
+        var bids = null;
+        if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid)
+          && adResponse.seatbid.length > 0) {
+            bids = adResponse.seatbid[0].bid
+          }
 
         /* --------------------------------------------------------------------------------- */
 
