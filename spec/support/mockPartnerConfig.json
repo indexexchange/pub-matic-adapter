@@ -1,6 +1,6 @@
 {
     "timeout": 1000,
-    "publisherId": "301",
+    "publisherId": "156209",
     "lat":"40.712775",
     "lon":"-74.005973",
     "yob":"1982",
@@ -8,7 +8,7 @@
     "kadfloor":"1.75",
     "xSlots": {
         "xSlot1": {
-            "adUnitName": "/15671365/DMDemo",
+            "adUnitName": "pubmatic_test2",
             "sizes": [ [300, 250] ],
             "bid_id": "_9ruakzhod"
         }
