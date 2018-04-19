@@ -120,7 +120,7 @@ describe('parseResponse', function () {
 
             /* Get mock response data from our responseData file */
             responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
-            mockData = responseData.bid.seatbid[0].bid;
+            mockData = responseData;
         });
 
         afterEach(function () {
@@ -130,7 +130,7 @@ describe('parseResponse', function () {
         /* Simple type checking on the returned objects, should always pass */
         it('each parcel should have the required fields set', function () {
             /* IF SRA, parse all parcels at once */
-            if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
+            if (partnerProfile.architecture) partnerModule.parseResponse(1, responseData, returnParcels);
 
             for (var i = 0; i < returnParcels.length; i++) {
 
@@ -194,13 +194,12 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            mockData = responseData.bid.seatbid[0].bid;
+            mockData = responseData;
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
             //reset mockdata here
             mockData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
-            mockData = mockData.bid.seatbid[0].bid;
             for (i = 0; i < returnParcels.length; i++) {
                 currRp = returnParcels[i];
                 /* IF MRA, parse one parcel at a time */
@@ -282,14 +281,18 @@ describe('parseResponse', function () {
 
             /* Get mock response data from our responseData file */
             responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
-            mockData = responseData.pass;
+            mockData = responseData;
         });
 
         afterEach(function () {
             registerAd.restore();
         });
 
+        //debugger;
         it('each parcel should have the required fields set', function () {
+
+          // As we are expecting no matching bid, change the bid id so it doesn't match
+          mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
@@ -339,6 +342,9 @@ describe('parseResponse', function () {
         it('registerAd should not be called', function () {
             var i, expectedAdEntry = {};
 
+            // As we are expecting no matching bid, change the bid id so it doesn't match
+            mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
+            
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
                 partnerModule.parseResponse(1, mockData, returnParcels);
@@ -365,7 +371,7 @@ describe('parseResponse', function () {
 
             /* Get mock response data from our responseData file */
             responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
-            mockData = responseData.bid.seatbid[0].bid;
+            mockData = responseData;
         });
 
         afterEach(function () {
@@ -376,7 +382,7 @@ describe('parseResponse', function () {
         it('each parcel should have the required fields set', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
             /* Get mock response data from our responseData file */
-            mockData = responseData.bid.seatbid[0].bid;
+            mockData = responseData;
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
