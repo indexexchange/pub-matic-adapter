@@ -155,7 +155,7 @@ describe('generateRequestObj', function () {
 
             //test cases for payload.site object
             expect(payload.site).to.exist.and.to.be.an('object');
-            expect(payload.site.page).to.and.equal(browser.topWindow.href);
+            expect(payload.site.page).to.and.equal(browser.topWindow.location.href);
             expect(payload.site.ref).to.exist.and.equal(browser.topWindow.document.referrer);
             expect(payload.site.publisher).to.exist.and.be.an('object');
             expect(payload.site.publisher.id).to.exist.and.to.equal(partnerConfig.publisherId);

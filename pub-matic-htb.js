@@ -129,7 +129,7 @@ function PubMaticHtb(configs) {
     function __populateSiteObject(publisherId) {
         var retObj =
         {
-            page: Browser.topWindow.href,
+            page: Browser.topWindow.location.href,
             ref: Browser.topWindow.document.referrer,
             publisher: {
                 id: publisherId, // mandatory
@@ -540,7 +540,7 @@ function PubMaticHtb(configs) {
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
             callbackType: Partner.CallbackTypes.CALLBACK_NAME, // Callback type, please refer to the readme for details
             architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
-            requestType: Partner.RequestTypes.JSONP // Request type, jsonp, ajax, or any.
+            requestType: Partner.RequestTypes.AJAX // Request type, jsonp, ajax, or any.
         };
         /* ---------------------------------------------------------------------------------------*/
 
