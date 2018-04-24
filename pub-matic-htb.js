@@ -539,8 +539,8 @@ function PubMaticHtb(configs) {
             },
             targetingKeys: { // Targeting keys for demand, should follow format ix_{statsId}_id
                 id: 'ix_pubm_id',
-                om: 'ix_pubm_cpm',
-                pm: 'ix_pubm_cpm',
+                om: 'ix_pubm_om',
+                pm: 'ix_pubm_om',
                 pmid: 'ix_pubm_dealid'
             },
             bidUnitInCents: 100, // The bid price unit (in cents) the endpoint returns, please refer to the readme for details

@@ -115,8 +115,8 @@ describe('Partner Profile', function () {
 
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
-                                    targetingSplit[2] !== 'cpm') {
-                                    this.report('om targeting key should be of the format ix_PUBM_cpm')
+                                    targetingSplit[2] !== 'om') {
+                                    this.report('om targeting key should be of the format ix_PUBM_om')
                                 }
                             }
                         },
@@ -127,8 +127,8 @@ describe('Partner Profile', function () {
 
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
-                                    targetingSplit[2] !== 'cpm') {
-                                    this.report('pm targeting key should be of the format ix_PUBM_cpm')
+                                    targetingSplit[2] !== 'om') {
+                                    this.report('pm targeting key should be of the format ix_PUBM_om')
                                 }
                             }
                         },
