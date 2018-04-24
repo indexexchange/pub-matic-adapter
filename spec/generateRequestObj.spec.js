@@ -32,12 +32,13 @@ function generateReturnParcels(profile, partnerConfig) {
         xSlotName,
         xSlotsArray,
         htSlot,
-        htSlotName;
+        htSlotName,
+        xSlotRef;
 
     for (htSlotName in partnerConfig.mapping) {
         xSlotsArray = partnerConfig.mapping[htSlotName];
         htSlot = {
-            id: htSlotName,
+            id: htSlotName, //htSlotID-1 / htSlotID-2
             getId: function () {
                 return this.id;
             }
@@ -45,17 +46,24 @@ function generateReturnParcels(profile, partnerConfig) {
 
         for (var i = 0; i < xSlotsArray.length; i++) {
             xSlotName = xSlotsArray[i];
-            returnParcels.push({
-                pubId: partnerConfig.publisherId,
-                partnerId: profile.partnerId,
-                partnerStatsId: profile.statsId,
-                htSlot: htSlot,
-                ref: "", // how is this populated?
-                xSlotName: xSlotName,
-                xSlotRef: partnerConfig.xSlots[xSlotName],
-                requestId: system.generateUniqueId(),
-                bid_id: partnerConfig.xSlots[xSlotName].bid_id,
-            });
+            xSlotRef = partnerConfig.xSlots[xSlotName];
+            for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
+                returnParcels.push({
+                    pubId: partnerConfig.publisherId,
+                    partnerId: profile.partnerId,
+                    partnerStatsId: profile.statsId,
+                    htSlot: htSlot,
+                    ref: "",
+                    xSlotName: xSlotName,
+                    xSlotRef: {
+                        adUnitName: xSlotRef.adUnitName,
+                        sizes: [xSlotRef.sizes[ii]],
+                        bid_id: xSlotRef.bid_id
+                    },
+                    requestId: system.generateUniqueId(),
+                    bid_id: partnerConfig.xSlots[xSlotName].bid_id,
+                });
+            }
         }
     }
     return returnParcels;
@@ -209,16 +217,19 @@ describe('generateRequestObj', function () {
             payload.forEach(obj => {
                 noMatch = true;
                 returnParcels.forEach(rp => {
-                    if(rp.bid_id === obj.id) {
-                        noMatch = false;
-                        sizes = rp.xSlotRef.sizes[0];
-                        expect(obj.tagId).to.equal(rp.xSlotRef.adUnitName);
-                        expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
-                        expect(obj.ext).to.exist.and.to.be.an('object');
-                        expect(obj.banner).to.exist.and.to.be.an('object');
-                        sizes = rp.xSlotRef.sizes[0]
-                        expect(obj.banner.w).to.exist.and.to.equal(sizes[0]);
-                        expect(obj.banner.h).to.exist.and.to.equal(sizes[1]);
+                    if (noMatch) {
+                        if(rp.bid_id === obj.id) {
+                            sizes = rp.xSlotRef.sizes[0];
+                            if (parseInt(obj.banner.w) === parseInt(sizes[0]) && parseInt(obj.banner.h) === sizes[1]) {
+                                noMatch = false;
+                                expect(obj.tagId).to.equal(rp.xSlotRef.adUnitName);
+                                expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
+                                expect(obj.ext).to.exist.and.to.be.an('object');
+                                expect(obj.banner).to.exist.and.to.be.an('object');
+                                expect(obj.banner.w).to.exist.and.to.equal(sizes[0]);
+                                expect(obj.banner.h).to.exist.and.to.equal(sizes[1]);
+                            }
+                        }
                     }
                 });
                 expect(noMatch).to.equal(false);

@@ -33,26 +33,34 @@ function generateReturnParcels(profile, partnerConfig) {
         xSlotName,
         i,
         utils = require('./support/libraryStubData.js'),
-        system = utils['system.js'];
+        system = utils['system.js'],
+        xSlotRef;
 
     for (htSlotName in partnerConfig.mapping) {
         xSlotsArray = partnerConfig.mapping[htSlotName];
         htSlot = {
-            id: htSlotName,
+            id: htSlotName, //htSlotID-1 / htSlotID-2
             getId: function () {
                 return this.id;
             }
         }
         for (i = 0; i < xSlotsArray.length; i++) {
             xSlotName = xSlotsArray[i];
-            returnParcels.push({
-                partnerId: profile.partnerId,
-                htSlot: htSlot,
-                ref: "", // how is this populated?
-                xSlotName: xSlotName,
-                xSlotRef: partnerConfig.xSlots[xSlotName],
-                requestId: system.generateUniqueId(),
-            });
+            xSlotRef = partnerConfig.xSlots[xSlotName];
+            for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
+                returnParcels.push({
+                    partnerId: profile.partnerId,
+                    htSlot: htSlot,
+                    ref: "", // how is this populated?
+                    xSlotName: xSlotName,
+                    xSlotRef: {
+                        adUnitName: xSlotRef.adUnitName,
+                        sizes: [xSlotRef.sizes[ii]],
+                        bid_id: xSlotRef.bid_id
+                    },
+                    requestId: system.generateUniqueId(),
+                });
+            }
         }
     }
     return returnParcels;
@@ -136,7 +144,6 @@ describe('parseResponse', function () {
 
                 /* IF MRA, parse one parcel at a time */
                 if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
-
                 var result = inspector.validate({
                     type: 'object',
                     properties: {
@@ -292,16 +299,16 @@ describe('parseResponse', function () {
         it('each parcel should have the required fields set', function () {
 
           // As we are expecting no matching bid, change the bid id so it doesn't match
-          mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
-
+          //mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
+          for (var i=0;i <mockData.seatbid[0].bid.length; i++) {
+            mockData.seatbid[0].bid[i].impid = mockData.seatbid[0].bid[i].impid + "1";
+          }
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
-
             for (var i = 0; i < returnParcels.length; i++) {
 
                 /* IF MRA, parse one parcel at a time */
                 if (!partnerProfile.architecture) partnerModule.parseResponse(1, mockData[i], [returnParcels[i]]);
-
                 var result = inspector.validate({
                     type: 'object',
                     properties: {
@@ -343,7 +350,9 @@ describe('parseResponse', function () {
             var i, expectedAdEntry = {};
 
             // As we are expecting no matching bid, change the bid id so it doesn't match
-            mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
+            for (var i=0;i <mockData.seatbid[0].bid.length; i++) {
+                mockData.seatbid[0].bid[i].impid = mockData.seatbid[0].bid[i].impid + "1";
+            }
             
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {

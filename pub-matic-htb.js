@@ -371,6 +371,7 @@ function PubMaticHtb(configs) {
             headerStatsInfo[htSlotId][curReturnParcel.requestId] = [curReturnParcel.xSlotName];
 
             var curBid;
+            var sizes;
 
             if(!bids
               || !Utilities.isArray(bids)
@@ -384,7 +385,7 @@ function PubMaticHtb(configs) {
             }
 
             for (var i = 0; i < bids.length; i++) {
-
+                sizes = curReturnParcel.xSlotRef.sizes[0];
                 /**
                  * This section maps internal returnParcels and demand returned from the bid request.
                  * In order to match them correctly, they must be matched via some criteria. This
@@ -392,9 +393,11 @@ function PubMaticHtb(configs) {
                  * key to a key that represents the placement in the configuration and in the bid responses.
                  */
                 if (bids[i].impid === curReturnParcel.xSlotRef.bid_id) {
-                    curBid = bids[i];
-                    bids.splice(i, 1);
-                    break;
+                    if (parseInt(bids[i].w) === parseInt(sizes[0]) && parseInt(bids[i].h) === parseInt(sizes[1])) {
+                        curBid = bids[i];
+                        bids.splice(i, 1);
+                        break;
+                    }
                 }
             }
 
