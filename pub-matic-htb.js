@@ -25,6 +25,7 @@ var SpaceCamp = require('space-camp.js');
 var System = require('system.js');
 var Network = require('network.js');
 var Utilities = require('utilities.js');
+var ComplianceService;
 var EventsService;
 var RenderService;
 
@@ -265,6 +266,34 @@ function PubMaticHtb(configs) {
             secure: Browser.getProtocol() === "https:" ? 1 : 0
         }
 
+        /* ------------------------ Get consent information -------------------------
+         * If you want to implement GDPR consent in your adapter, use the function
+         * ComplianceService.gdpr.getConsent() which will return an object.
+         *
+         * Here is what the values in that object mean:
+         *      - applies: the boolean value indicating if the request is subject to
+         *      GDPR regulations
+         *      - consentString: the consent string developed by GDPR Consent Working
+         *      Group under the auspices of IAB Europe
+         *
+         * The return object should look something like this:
+         * {
+         *      applies: true,
+         *      consentString: "BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA"
+         * }
+         */
+        var isPrivacyEnabled = ComplianceService.gdpr.isPrivacyEnabled();
+        if (isPrivacyEnabled) {
+            var gdprStatus = ComplianceService.gdpr.getConsent();
+            payload.user.ext = {
+                consent: gdprStatus.consentString
+            }
+            payload.regs = {
+                ext: {
+                    gdpr: gdprStatus.applies ? 1 : 0
+                }
+            }
+        }
         /* -------------------------------------------------------------------------- */
         return {
             url: baseUrl,
@@ -509,6 +538,7 @@ function PubMaticHtb(configs) {
     (function __constructor() {
         EventsService = SpaceCamp.services.EventsService;
         RenderService = SpaceCamp.services.RenderService;
+        ComplianceService = SpaceCamp.services.ComplianceService;
 
         /* =============================================================================
          * STEP 1  | Partner Configuration
