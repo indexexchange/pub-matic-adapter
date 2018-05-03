@@ -84,6 +84,7 @@ describe('generateRequestObj', function () {
     partnerConfig = require('./support/mockPartnerConfig.json'),
     expect = require('chai').expect,
     browser = libraryStubData['browser.js'],
+    complianceService = libraryStubData['space-camp.js'],
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
@@ -95,6 +96,7 @@ describe('generateRequestObj', function () {
     requestObject,
     endpoint = 'http://hbopenbid.pubmatic.com/translator?source=index-client';
 
+    complianceService = complianceService.services.ComplianceService;
     /* Generate a request object using generated mock return parcels. */
     returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
 
@@ -202,6 +204,18 @@ describe('generateRequestObj', function () {
             }
             expect(payload.ext.wrapper.wp).to.exist.and.to.equal('pbjs');
 
+            //test case for gdpr
+            var isPrivacyEnabled = complianceService.gdpr.isPrivacyEnabled();
+            if (isPrivacyEnabled) {
+                var gdprStatus = complianceService.gdpr.getConsent();
+                expect(payload.user.ext.consent).to.exist.and.to.equal(gdprStatus.consentString);
+
+                expect(payload.regs).to.exist;
+                expect(payload.regs.ext.gdpr).to.exist.and.to.equal(gdprStatus.applies ? 1 : 0);
+            } else {
+                expect(payload.user.ext).to.not.exist;
+                expect(payload.reqs).to.not.exist;
+            }
         });
 
         it('request object should correctly map return parcels to impr objects', function(){
