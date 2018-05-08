@@ -205,7 +205,7 @@ describe('generateRequestObj', function () {
             expect(payload.ext.wrapper.wp).to.exist.and.to.equal('pbjs');
 
             //test case for gdpr
-            var isPrivacyEnabled = complianceService.gdpr.isPrivacyEnabled();
+            var isPrivacyEnabled = complianceService.isPrivacyEnabled();
             if (isPrivacyEnabled) {
                 var gdprStatus = complianceService.gdpr.getConsent();
                 expect(payload.user.ext.consent).to.exist.and.to.equal(gdprStatus.consentString);
