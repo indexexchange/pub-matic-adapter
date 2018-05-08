@@ -282,7 +282,7 @@ function PubMaticHtb(configs) {
          *      consentString: "BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA"
          * }
          */
-        var isPrivacyEnabled = ComplianceService.gdpr.isPrivacyEnabled();
+        var isPrivacyEnabled = ComplianceService.isPrivacyEnabled();
         if (isPrivacyEnabled) {
             var gdprStatus = ComplianceService.gdpr.getConsent();
             payload.user.ext = {
