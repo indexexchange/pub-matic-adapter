@@ -58,10 +58,8 @@ function generateReturnParcels(profile, partnerConfig) {
                     xSlotRef: {
                         adUnitName: xSlotRef.adUnitName,
                         sizes: [xSlotRef.sizes[ii]],
-                        bid_id: xSlotRef.bid_id
                     },
-                    requestId: system.generateUniqueId(),
-                    bid_id: partnerConfig.xSlots[xSlotName].bid_id,
+                    requestId: system.generateUniqueId()
                 });
             }
         }
@@ -232,7 +230,7 @@ describe('generateRequestObj', function () {
                 noMatch = true;
                 returnParcels.forEach(rp => {
                     if (noMatch) {
-                        if(rp.bid_id === obj.id) {
+                        if(rp.htSlot.getId() === obj.id) {
                             sizes = rp.xSlotRef.sizes[0];
                             if (parseInt(obj.banner.w) === parseInt(sizes[0]) && parseInt(obj.banner.h) === sizes[1]) {
                                 noMatch = false;

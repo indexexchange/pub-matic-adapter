@@ -55,8 +55,7 @@ function generateReturnParcels(profile, partnerConfig) {
                     xSlotName: xSlotName,
                     xSlotRef: {
                         adUnitName: xSlotRef.adUnitName,
-                        sizes: [xSlotRef.sizes[ii]],
-                        bid_id: xSlotRef.bid_id
+                        sizes: [xSlotRef.sizes[ii]]
                     },
                     requestId: system.generateUniqueId(),
                 });
@@ -202,6 +201,7 @@ describe('parseResponse', function () {
 
             /* Get mock response data from our responseData file */
             mockData = responseData;
+
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
@@ -220,7 +220,7 @@ describe('parseResponse', function () {
                  */
                 for(j=0; j<mockData.length; j++) {
                     currBid = mockData[j];
-                    if (currBid.impid === currRp.xSlotRef.bid_id) {
+                    if (currBid.impid === currRp.htSlot.getId()) {
                         expect(currRp.price).to.equal(currBid.price);
                         expect(currRp.targetingType).to.equal('slot');
                         expect(currRp.adm).to.equal(currBid.adm);
@@ -353,7 +353,7 @@ describe('parseResponse', function () {
             for (var i=0;i <mockData.seatbid[0].bid.length; i++) {
                 mockData.seatbid[0].bid[i].impid = mockData.seatbid[0].bid[i].impid + "1";
             }
-            
+
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
                 partnerModule.parseResponse(1, mockData, returnParcels);

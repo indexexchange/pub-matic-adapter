@@ -81,7 +81,7 @@ function PubMaticHtb(configs) {
 
         returnParcels.forEach(function(rp) {
             impObj = {
-                id: rp.xSlotRef.bid_id || System.generateUniqueId(),
+                id:  rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
@@ -421,7 +421,7 @@ function PubMaticHtb(configs) {
                  * is usually some sort of placements or inventory codes. Please replace the someCriteria
                  * key to a key that represents the placement in the configuration and in the bid responses.
                  */
-                if (bids[i].impid === curReturnParcel.xSlotRef.bid_id) {
+                if (bids[i].impid === curReturnParcel.htSlot.getId()) {
                     if (parseInt(bids[i].w) === parseInt(sizes[0]) && parseInt(bids[i].h) === parseInt(sizes[1])) {
                         curBid = bids[i];
                         bids.splice(i, 1);
