@@ -5,7 +5,7 @@
          "bid":[
             {
                "id":"22E69D8C-F81C-47BE-9922-4ADB8774126E",
-               "impid":"_9ruakzho2",
+               "impid":"htSlotID-1",
                "price":1.2,
                "adm":"\u003cspan class=\"PubAPIAd\"  id=\"22E69D8C-F81C-47BE-9922-4ADB8774126E\"\u003e\u003ca href=\"http://www.pubmatic.com\"\u003e\u003cimg src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"\u003e\u003c/a\u003e\u003ciframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1\u0026pubId=156209\u0026siteId=188952\u0026adId=1225801\u0026adType=10\u0026adServerId=165\u0026kefact=1.200000\u0026kaxefact=1.200000\u0026kadNetFrequecy=0\u0026kadwidth=300\u0026kadheight=250\u0026kadsizeid=225\u0026kltstamp=1524149744\u0026indirectAdId=1010494\u0026adServerOptimizerId=1\u0026ranreq=0.1\u0026kpbmtpfact=0.000000\u0026dcId=2\u0026tldId=0\u0026passback=25\u0026svr=BID88455\u0026ekefact=8K3YWsvkBAA8pUNSAHCIJa_8-4YnVzLvBj_fLyE9rhUQ2dtk\u0026ekaxefact=8K3YWuPkBACdDvTDtBjs2HQi3DWO7eNsLC48r8eNwtGle_0_\u0026ekpbmtpfact=8K3YWvnkBADhKXp6CKLvSDFySDZjBsh2EohkBEKBxyov0txm\u0026imprId=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026oid=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026crID=0\u0026cntryId=232\u0026campaignId=0\u0026isRTB=0\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"\u003e\u003c/iframe\u003e\u003c/span\u003e \u003c!-- PubMatic Ad Ends --\u003e",
                "h":250,
@@ -17,7 +17,7 @@
             },
             {
                "id":"22E69D8C-F81C-47BE-9922-4ADB8774126E",
-               "impid":"_9ruakzho2",
+               "impid":"htSlotID-1",
                "price":1.8,
                "adm":"\u003cspan class=\"PubAPIAd\"  id=\"22E69D8C-F81C-47BE-9922-4ADB8774126E\"\u003e\u003ca href=\"http://www.pubmatic.com\"\u003e\u003cimg src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"\u003e\u003c/a\u003e\u003ciframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1\u0026pubId=156209\u0026siteId=188952\u0026adId=1225801\u0026adType=10\u0026adServerId=165\u0026kefact=1.200000\u0026kaxefact=1.200000\u0026kadNetFrequecy=0\u0026kadwidth=300\u0026kadheight=250\u0026kadsizeid=225\u0026kltstamp=1524149744\u0026indirectAdId=1010494\u0026adServerOptimizerId=1\u0026ranreq=0.1\u0026kpbmtpfact=0.000000\u0026dcId=2\u0026tldId=0\u0026passback=25\u0026svr=BID88455\u0026ekefact=8K3YWsvkBAA8pUNSAHCIJa_8-4YnVzLvBj_fLyE9rhUQ2dtk\u0026ekaxefact=8K3YWuPkBACdDvTDtBjs2HQi3DWO7eNsLC48r8eNwtGle_0_\u0026ekpbmtpfact=8K3YWvnkBADhKXp6CKLvSDFySDZjBsh2EohkBEKBxyov0txm\u0026imprId=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026oid=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026crID=0\u0026cntryId=232\u0026campaignId=0\u0026isRTB=0\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"\u003e\u003c/iframe\u003e\u003c/span\u003e \u003c!-- PubMatic Ad Ends --\u003e",
                "h":90,
@@ -29,10 +29,10 @@
             },
             {
                "id":"22E69D8C-F81C-47BE-9922-4ADB8774126E",
-               "impid":"_9ruakzho3",
+               "impid":"htSlotID-2",
                "price":2.2,
                "adm":"\u003cspan class=\"PubAPIAd\"  id=\"22E69D8C-F81C-47BE-9922-4ADB8774126E\"\u003e\u003ca href=\"http://www.pubmatic.com\"\u003e\u003cimg src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"\u003e\u003c/a\u003e\u003ciframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1\u0026pubId=156209\u0026siteId=188952\u0026adId=1225801\u0026adType=10\u0026adServerId=165\u0026kefact=1.200000\u0026kaxefact=1.200000\u0026kadNetFrequecy=0\u0026kadwidth=300\u0026kadheight=250\u0026kadsizeid=225\u0026kltstamp=1524149744\u0026indirectAdId=1010494\u0026adServerOptimizerId=1\u0026ranreq=0.1\u0026kpbmtpfact=0.000000\u0026dcId=2\u0026tldId=0\u0026passback=25\u0026svr=BID88455\u0026ekefact=8K3YWsvkBAA8pUNSAHCIJa_8-4YnVzLvBj_fLyE9rhUQ2dtk\u0026ekaxefact=8K3YWuPkBACdDvTDtBjs2HQi3DWO7eNsLC48r8eNwtGle_0_\u0026ekpbmtpfact=8K3YWvnkBADhKXp6CKLvSDFySDZjBsh2EohkBEKBxyov0txm\u0026imprId=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026oid=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026crID=0\u0026cntryId=232\u0026campaignId=0\u0026isRTB=0\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"\u003e\u003c/iframe\u003e\u003c/span\u003e \u003c!-- PubMatic Ad Ends --\u003e",
-               "h":250,
+               "h":600,
                "w":300,
                "ext":{
                   "dspid":null,
@@ -41,7 +41,7 @@
             },
             {
                "id":"22E69D8C-F81C-47BE-9922-4ADB8774126E",
-               "impid":"_9ruakzho4",
+               "impid":"htSlotID-2",
                "price":1.6,
                "adm":"\u003cspan class=\"PubAPIAd\"  id=\"22E69D8C-F81C-47BE-9922-4ADB8774126E\"\u003e\u003ca href=\"http://www.pubmatic.com\"\u003e\u003cimg src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"\u003e\u003c/a\u003e\u003ciframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1\u0026pubId=156209\u0026siteId=188952\u0026adId=1225801\u0026adType=10\u0026adServerId=165\u0026kefact=1.200000\u0026kaxefact=1.200000\u0026kadNetFrequecy=0\u0026kadwidth=300\u0026kadheight=250\u0026kadsizeid=225\u0026kltstamp=1524149744\u0026indirectAdId=1010494\u0026adServerOptimizerId=1\u0026ranreq=0.1\u0026kpbmtpfact=0.000000\u0026dcId=2\u0026tldId=0\u0026passback=25\u0026svr=BID88455\u0026ekefact=8K3YWsvkBAA8pUNSAHCIJa_8-4YnVzLvBj_fLyE9rhUQ2dtk\u0026ekaxefact=8K3YWuPkBACdDvTDtBjs2HQi3DWO7eNsLC48r8eNwtGle_0_\u0026ekpbmtpfact=8K3YWvnkBADhKXp6CKLvSDFySDZjBsh2EohkBEKBxyov0txm\u0026imprId=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026oid=22E69D8C-F81C-47BE-9922-4ADB8774126E\u0026crID=0\u0026cntryId=232\u0026campaignId=0\u0026isRTB=0\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"\u003e\u003c/iframe\u003e\u003c/span\u003e \u003c!-- PubMatic Ad Ends --\u003e",
                "h":250,
@@ -57,5 +57,3 @@
    ],
    "cur":"USD"
 }
-
-
