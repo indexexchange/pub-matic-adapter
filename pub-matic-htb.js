@@ -382,10 +382,12 @@ function PubMaticHtb(configs) {
 
         /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
-        var bids = null;
+        var bids = [];
         if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid)
           && adResponse.seatbid.length > 0) {
-            bids = adResponse.seatbid[0].bid
+            for (var i = 0; i < adResponse.seatbid.length; i++) {
+              bids = bids.concat(adResponse.seatbid[i].bid);
+            }
           }
 
         /* --------------------------------------------------------------------------------- */

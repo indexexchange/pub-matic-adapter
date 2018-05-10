@@ -1,0 +1,52 @@
+{
+  "id": "1525982536538",
+  "seatbid": [
+    {
+      "bid": [
+        {
+          "id": "91CB3693-DEF7-423E-A3D6-14D13B94BFAF",
+          "impid": "8b03f608-c5f4-6dc6-5bb6-3097d508c0aa",
+          "price": 1.2,
+          "adm": "<span class=\"PubAPIAd\"  id=\"91CB3693-DEF7-423E-A3D6-14D13B94BFAF\"><a href=\"http://www.pubmatic.com\"><img src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"></a><iframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1&pubId=156209&siteId=188952&adId=1225801&adType=10&adServerId=165&kefact=1.200000&kaxefact=1.200000&kadNetFrequecy=0&kadwidth=300&kadheight=250&kadsizeid=225&kltstamp=1525982536&indirectAdId=1010494&adServerOptimizerId=1&ranreq=0.1&kpbmtpfact=0.000000&dcId=1&tldId=0&passback=25&svr=BID77417&ekefact=SKX0WhbTCQBz539OTzDtlOaRiuo0TOw0oT5hXCoHEx3dXKcQ&ekaxefact=SKX0Wi3TCQAwcTzfA6TzPpaK_hC24UcE3CrhvmuSSiv6-kMK&ekpbmtpfact=SKX0Wj_TCQBwNI5bEUAPI_SY6jGjzIb2UMzqPCjrDQ9PJ17c&imprId=91CB3693-DEF7-423E-A3D6-14D13B94BFAF&oid=91CB3693-DEF7-423E-A3D6-14D13B94BFAF&carrierid=24&crID=0&cntryId=232&campaignId=0&isRTB=0&pageURL=http%3A%2F%2Fsandbox.ht.indexexchange.com%2Fht%2Fpubmatic-test-page.html\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"></iframe></span> <!-- PubMatic Ad Ends -->",
+          "h": 250,
+          "w": 300,
+          "ext": {}
+        },
+        {
+          "id": "ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD",
+          "impid": "a2a7eaf4-910b-9ffe-3cc9-c46aa635582c",
+          "price": 1.2,
+          "adm": "<span class=\"PubAPIAd\"  id=\"ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD\"><a href=\"http://www.pubmatic.com\"><img src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"></a><iframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1&pubId=156209&siteId=188952&adId=1225801&adType=10&adServerId=165&kefact=1.200000&kaxefact=1.200000&kadNetFrequecy=0&kadwidth=300&kadheight=250&kadsizeid=225&kltstamp=1525982536&indirectAdId=1010494&adServerOptimizerId=1&ranreq=0.1&kpbmtpfact=0.000000&dcId=1&tldId=0&passback=25&svr=BID77428&ekefact=SKX0WpgNCgDInekf8TUwOnYCUb82k-g0t48F0OPhFO89uwde&ekaxefact=SKX0WrENCgCAZmagZOAmURoqvf6INKAKAZ_P5WFWGPjdg1Dw&ekpbmtpfact=SKX0Wr8NCgDGNNT5biqIHw8wihdUmg3Iv8WNaiu6N-1mG0eG&imprId=ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD&oid=ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD&carrierid=24&crID=0&cntryId=232&campaignId=0&isRTB=0&pageURL=http%3A%2F%2Fsandbox.ht.indexexchange.com%2Fht%2Fpubmatic-test-page.html\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"></iframe></span> <!-- PubMatic Ad Ends -->",
+          "h": 250,
+          "w": 300,
+          "ext": {}
+        }
+      ],
+      "seat": "pubmatic"
+    },
+    {
+      "bid": [
+        {
+          "id": "8703CAB6-8439-4977-90DF-F2793963BE7A",
+          "impid": "a2a7eaf4-910b-9ffe-3cc9-c46aa635582c",
+          "price": 4.091119,
+          "adm": "<span class=\"PubAPIAd\"  id=\"8703CAB6-8439-4977-90DF-F2793963BE7A\"><script>(function(){var e=this;var k=function(g){k[\" \"](g);return g};k[\" \"]=function(){};var l=/^https?:\\/\\/(\\w|-)+\\.cdn\\.ampproject\\.(net|org)(\\?|\\/|$)/,m=function(g,b){this.i=g;this.g=b},p=function(g,b){this.url=g;this.h=!!b;this.depth=null};var q=function(){var g=encodeURIComponent,b=e,c=[],f=null;do{var a=b;try{var n;if(n=!!a&&null!=a.location.href)b:{try{k(a.foo);n=!0;break b}catch(t){}n=!1}var h=n}catch(t){h=!1}if(h){var d=a.location.href;f=a.document&&a.document.referrer||null}else d=f,f=null;c.push(new p(d||\"\"));try{b=a.parent}catch(t){b=null}}while(b&&a!=b);a=0;for(b=c.length-1;a<=b;++a)c[a].depth=b-a;a=e;if(a.location&&a.location.ancestorOrigins&&a.location.ancestorOrigins.length==c.length-1)for(b=1;b<c.length;++b)d=c[b],d.url||(d.url=a.location.ancestorOrigins[b-1]||\"\",d.h=!0);a=new p(e.location.href,!1);d=null;for(f=b=c.length-1;0<=f;--f)if(h=c[f],!d&&l.test(h.url)&&(d=h),h.url&&!h.h){a=h;break}d=null;f=c.length&&c[b].url;0!=a.depth&&f&&(d=c[b]);c=new m(a,d);c=c.g?c.g.url:c.i.url;a=c.indexOf(\"?\");return g(0<=a?c.substring(0,a):c)},r=[\"rfl\"],u=e;r[0]in u||\"undefined\"==typeof u.execScript||u.execScript(\"var \"+r[0]);for(var v;r.length&&(v=r.shift());){var w;if(w=!r.length)w=void 0!==q;w?u[v]=q:u[v]&&u[v]!==Object.prototype[v]?u=u[v]:u=u[v]={}};}).call(this);</script><iframe id=\"google_decrypt_frame_1822604666\"scrolling=\"no\"frameborder=\"0\"marginwidth=\"0\"marginheight=\"0\"width=\"728\"height=\"90\"onload=\"(function(){this.contentWindow.postMessage('https://googleads.g.doubleclick.net/pagead/adfetch?client=ca-pub-6362111942204036&url=http://sandbox.ht.indexexchange.com/ht/pubmatic-test-page.html&adk=590213500&adsafe=medium&ip=12.126.107.50&ad_type=html&output=html&unviewed_position_start=1&format=728x90_as&hl=en&sub_client=bidder-188952&aeid=4180170,4444202,8374013,11800837,11801045,20194002,20194018,20194034,20194044,20194049,20194060,20194069,20194072,20194082,20194094,20194105,20194115,20194116,20194117,20194120,20194121,20194127,20194131,20194133,20194144,20194145,20194147,20194152,20194153,20194154,20194156,20194157,20194159,20194161,20194163,20194164,21064772,22314939,22322243,29222134,30004008,30030644,30269661,30981016,31866886,32740005,34047031,34259911,34491395,34491397,34541512,39668627,40975674,40975703,43832934,44652212,47141119,56703003,56747051,65038470,69498202,69498301,73937502,92580042,98571960,113410035,122938125,129423586,139802585,142596809,165660765,170100437,171178456,175895051,176763006,176763007,178664763,190140661,192115170,192115183,192115185,192115188,194171907,195440539,195440735,201792004,202957068,211826082,212547036,218811152,239945060,258752303,318477284,318478870,318479419,318479935,318479992,318480466,318480677,318480690,318480837,318480868,318481011,321238015,322992335,325582801,327872801,330509001,332422137,332422401,343060791,350921262,351971720,384000076,384820066,404545670,404545686,407915002,409000010,409756038,410075047,414829039,420706104,431402013,480392205,512433403,528556014,563525302,650227003,676982054,702417642,704545901,783666061,869703027,1123699103,1338050803,1624240284,1734362080,1963290094,2017120702&awbid_c=AKAmf-DgI_0t42h1qs_oUIQIfJWzdJH0hCRZ0UcTcObeZMHYwCxPHJKcG4zgwFcf7iRl-t-rvDfhlKFK2ldsSeHfiTCK6_eoE9t_Pz97Yclaf1vE87hBsMs&awbid_d=AKAmf-A0ehUl9h65IFZd06ZfWp9-31GwymBD5hQwNfKIow00Qm0AGbauG5RxOI06XysbJA8mqtgFLcvP-g0Krz5fnKmR3gn07vWOeyLYNjgHl0h3zJmXbzcggTXiZlxtHMlJspY8-UKji0ovDyzvFfR97V-HHQQts39PsM6sG6gBoGwWUsUpwd8syUeJEMAYN57wHJH7fLRgMkxacWEUNmCQLbk1A7-i_yV_2t2fS65pFyh5okLF_K6iW8s4leIbn_Nfx9gmLgQNyYYLLGvtAdsxF5ko_AONPsckzRGHN3d1WzCGy6nGfeEWfzavjrkHohJKRwhbnJzyq5uc_-y3L7ewg76CZyTkZoe54hJptR67bB9m7sUbLgxlNXB-ozDQIoLgmYV0_PxB6Q5T2TZxK8naIBvWYRhjPH_pKs-DWYYMT24cBoZFl_uJ-3vTWIebJ0PBQKX7I_4f3wM8Y3KkjNbHZ7p62hd1bHQlq6FKEAtzauacG0S4D4jVYd_b5nRrk10L3YgXRcE3SwuL1zlg8ozTrcTD75zmWXk7RmghOIT6ksz03TWj4HiIQPwk_Xe-p0gdnw6HxOU0VI85uwHEDytuBYVVF10muhsgBi8l9d0yTNQ4_VL79elUsM9NzZfFyHCw1Lx-gEwi&cid=AKAmf-Af8KLWq6ePOuhTkxay3chr5__cbF5uUxhV99rwxsDwDCcApJSwdyxnnBuMKrpL_Fq-LT7PjxGeatDBFyiDnX784OAtdw&exk=1822604666&rfl='+(typeof(window.rfl)=='function'?rfl():''),'https://googleads.g.doubleclick.net')}).call(this);\"src=\"https://googleads.g.doubleclick.net/pagead/render_post_ads_v1.html#exk=1822604666&a_pr=6:5.84445592\"></iframe><div style=\"position: absolute; left: 0px; top: 0px; visibility: hidden;\"><img src=\"https://pagead2.googlesyndication.com/pagead/gen_204?id=awbid&awbid_b=AKAmf-Da_Gfl5NC4KMklHD17wesknPvfpJy8L1fqVHpnTXvwRat519x9i2kPRyQbrKv3LtlMTds_KaHgH5YaIrKX2sf6CvQBfeuLSFIXPKoifOKxDGzHir8\" border=0 width=1 height=1 alt=\"\" style=\"display:none\"></div><script src=\"https://googleads.g.doubleclick.net/pagead/xbfe_backfill.js\"></script><script>(function() {r3px('1822604666');})();</script><iframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1&pubId=156209&siteId=188952&adId=1049976&adType=10&adServerId=243&kefact=4.091119&kaxefact=4.091119&kadNetFrequecy=0&kadwidth=728&kadheight=90&kadsizeid=7&kltstamp=1525982536&indirectAdId=0&adServerOptimizerId=2&ranreq=0.1&kpbmtpfact=5.844456&dcId=1&tldId=0&passback=0&svr=BID77412&ekefact=SKX0WnqkCgB3OBxV-9v7GhUCpfXip7EixOxn2QJmCxFs0JkS&ekaxefact=SKX0WomkCgBWCR-5OqWPtSYBB4yH012uYUo8IQB7vd0BQ1cs&ekpbmtpfact=SKX0WpWkCgB5WzxWeIH2RYMn4YqE4Dr4GogoQRAY-sA8O_We&imprId=8703CAB6-8439-4977-90DF-F2793963BE7A&oid=8703CAB6-8439-4977-90DF-F2793963BE7A&carrierid=24&crID=256203694023&ucrid=3758035288939528944&cntryId=232&campaignId=22987&creativeId=0&pctr=0.000000&wDSPByrId=2&wDspId=80&wbId=25&wrId=0&wAdvID=746759&isRTB=1&rtbId=F61FAD63-0941-4543-AAD0-D5E9F3D590BE&pageURL=http%3A%2F%2Fsandbox.ht.indexexchange.com%2Fht%2Fpubmatic-test-page.html&lpu=stewarthotelnyc.com\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"></iframe></span> <!-- PubMatic Ad Ends -->",
+          "adomain": [
+            "stewarthotelnyc.com"
+          ],
+          "iurl": "http://googleads.g.doubleclick.net/dbm/ad?dbm_p=AKAmf-Dt-UBivhLQWz0w1ykBas7D7bJCZatkbXEdBPCJHzvCsEKyPro",
+          "cid": "22987",
+          "crid": "256203694023",
+          "h": 90,
+          "w": 728,
+          "ext": {
+            "dspid": 80,
+            "advid": 746759
+          }
+        }
+      ],
+      "seat": "4438"
+    }
+  ],
+  "cur": "USD"
+}
