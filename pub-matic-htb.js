@@ -83,6 +83,7 @@ function PubMaticHtb(configs) {
             impObj = {
                 id:  rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
+                secure: Browser.getProtocol() === "https:" ? 1 : 0,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
@@ -262,8 +263,7 @@ function PubMaticHtb(configs) {
             site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
             device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
             user: __populateUserInfo(returnParcels[0]), // obj | opt
-            ext: __populateExtObject(returnParcels[0]), // not required?? - to be checked
-            secure: Browser.getProtocol() === "https:" ? 1 : 0
+            ext: __populateExtObject(returnParcels[0]) // not required?? - to be checked
         }
 
         /* ------------------------ Get consent information -------------------------
