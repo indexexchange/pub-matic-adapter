@@ -7,7 +7,11 @@
  */
 
 //? if (FEATURES.GPT_LINE_ITEMS) {
-shellInterface.PubMaticHtb = {
+shellInterface.PubmaticHtb = {
+    render: SpaceCamp.services.RenderService.renderDfpAd.bind(null, 'PubMaticHtb')
+};
+
+shellInterface.PubmaticModule = {
     render: SpaceCamp.services.RenderService.renderDfpAd.bind(null, 'PubMaticHtb')
 };
 //? }
