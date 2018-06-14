@@ -551,10 +551,10 @@ function PubMaticHtb(configs) {
 
         /* ---------- Please fill out this partner profile according to your module ------------*/
         __profile = {
-            partnerId: 'PubMaticHtb', // PartnerName
-            namespace: 'PubMaticHtb', // Should be same as partnerName
+            partnerId: 'PubmaticHtb', // PartnerName
+            namespace: 'PubmaticHtb', // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.1.0',
+            version: '2.1.1',
             targetingType: 'slot',
             enabledAnalytics: {
                 requestTime: !0
