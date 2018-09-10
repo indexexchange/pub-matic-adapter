@@ -47,7 +47,7 @@ function generateReturnParcels(profile, partnerConfig) {
         for (i = 0; i < xSlotsArray.length; i++) {
             xSlotName = xSlotsArray[i];
             xSlotRef = partnerConfig.xSlots[xSlotName];
-            for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
+            //for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
                 returnParcels.push({
                     partnerId: profile.partnerId,
                     htSlot: htSlot,
@@ -55,11 +55,11 @@ function generateReturnParcels(profile, partnerConfig) {
                     xSlotName: xSlotName,
                     xSlotRef: {
                         adUnitName: xSlotRef.adUnitName,
-                        sizes: [xSlotRef.sizes[ii]]
+                        sizes: xSlotRef.sizes
                     },
                     requestId: system.generateUniqueId(),
                 });
-            }
+            //}
         }
     }
     return returnParcels;
@@ -442,7 +442,6 @@ describe('parseResponse', function () {
                         }
                     }
                 }, returnParcels[i]);
-
                 expect(result.valid, result.format()).to.be.true;
             }
         });
@@ -463,7 +462,6 @@ describe('parseResponse', function () {
                  * The parcels have already been parsed and should contain all the
                  * necessary demand.
                  */
-
                 expect(returnParcels[i]).to.exist;
             }
         });

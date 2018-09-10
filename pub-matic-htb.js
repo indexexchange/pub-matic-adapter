@@ -89,14 +89,24 @@ function PubMaticHtb(configs) {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
                 }
             }
-            sizes = rp.xSlotRef.sizes[0];
+            sizes = rp.xSlotRef.sizes;
             if (sizes.length > 0) {
-                impObj.banner = {
-                    w: sizes[0],
-                    h: sizes[1]
+                if (sizes[0].length > 0) {
+                    impObj.banner = {
+                        w: sizes[0][0],
+                        h: sizes[0][1]
+                    }
+                } else {
+                    console.log("PubMatic: Error in sizes array");
                 }
-            } else {
-                console.log("PubMatic: Error in sizes array");
+                sizes = sizes.slice(1, sizes.length);
+
+                if (sizes.length > 0) {
+                    impObj.banner.format = [];
+                    sizes.forEach(function(size) {
+                        impObj.banner.format.push({w: size[0], h: size[1]});
+                    });
+                }
             }
             retArr.push(impObj);
         });

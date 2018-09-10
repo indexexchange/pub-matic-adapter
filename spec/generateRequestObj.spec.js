@@ -47,7 +47,7 @@ function generateReturnParcels(profile, partnerConfig) {
         for (var i = 0; i < xSlotsArray.length; i++) {
             xSlotName = xSlotsArray[i];
             xSlotRef = partnerConfig.xSlots[xSlotName];
-            for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
+            // for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
                 returnParcels.push({
                     pubId: partnerConfig.publisherId,
                     partnerId: profile.partnerId,
@@ -57,11 +57,11 @@ function generateReturnParcels(profile, partnerConfig) {
                     xSlotName: xSlotName,
                     xSlotRef: {
                         adUnitName: xSlotRef.adUnitName,
-                        sizes: [xSlotRef.sizes[ii]],
+                        sizes: xSlotRef.sizes,
                     },
                     requestId: system.generateUniqueId()
                 });
-            }
+            // }
         }
     }
     return returnParcels;
@@ -223,7 +223,6 @@ describe('generateRequestObj', function () {
                 sizes;
             payload = payload.imp;
             returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
-
             expect(payload).to.exist.and.to.be.an('array').with.length.above(0);
             expect(payload.length).to.equal(returnParcels.length);
             payload.forEach(obj => {
@@ -231,15 +230,23 @@ describe('generateRequestObj', function () {
                 returnParcels.forEach(rp => {
                     if (noMatch) {
                         if(rp.htSlot.getId() === obj.id) {
-                            sizes = rp.xSlotRef.sizes[0];
-                            if (parseInt(obj.banner.w) === parseInt(sizes[0]) && parseInt(obj.banner.h) === sizes[1]) {
+                            sizes = rp.xSlotRef.sizes;
+                            if (parseInt(obj.banner.w) === parseInt(sizes[0][0]) && parseInt(obj.banner.h) === sizes[0][1]) {
                                 noMatch = false;
                                 expect(obj.tagId).to.equal(rp.xSlotRef.adUnitName);
                                 expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
                                 expect(obj.ext).to.exist.and.to.be.an('object');
                                 expect(obj.banner).to.exist.and.to.be.an('object');
-                                expect(obj.banner.w).to.exist.and.to.equal(sizes[0]);
-                                expect(obj.banner.h).to.exist.and.to.equal(sizes[1]);
+                                expect(obj.banner.w).to.exist.and.to.equal(sizes[0][0]);
+                                expect(obj.banner.h).to.exist.and.to.equal(sizes[0][1]);
+                                if (sizes.length > 1) {
+                                    expect(obj.banner.format).to.exist.and.to.be.an('array').with.length.above(0);
+                                    expect(obj.banner.format.length).to.equal(sizes.length-1);
+                                    for(var j=1; j<sizes.length; j++) {
+                                        expect(obj.banner.format[j-1].w).to.equal(sizes[j][0]);
+                                        expect(obj.banner.format[j-1].h).to.equal(sizes[j][1]);
+                                    }
+                                }
                             }
                         }
                     }

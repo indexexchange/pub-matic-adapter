@@ -13,11 +13,11 @@
         },
         "xSlot2": {
             "adUnitName": "pubmatic_test3",
-            "sizes": [ [300, 600] ]
+            "sizes": [ [300, 600], [160, 600], [300, 250] ]
         },
         "xSlot3": {
             "adUnitName": "pubmatic_test4",
-            "sizes": [ [300, 250] ]
+            "sizes": [ [300, 250], [728, 90], [160, 600] ]
         }
     },
     "mapping": {
