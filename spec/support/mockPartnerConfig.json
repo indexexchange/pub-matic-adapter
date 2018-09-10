@@ -1,0 +1,27 @@
+{
+    "timeout": 1000,
+    "publisherId": "156209",
+    "lat":"40.712775",
+    "lon":"-74.005973",
+    "yob":"1982",
+    "gender":"M",
+    "kadfloor":"1.75",
+    "xSlots": {
+        "xSlot1": {
+            "adUnitName": "pubmatic_test2",
+            "sizes": [ [300, 250], [728, 90] ]
+        },
+        "xSlot2": {
+            "adUnitName": "pubmatic_test3",
+            "sizes": [ [300, 600], [160, 600], [300, 250] ]
+        },
+        "xSlot3": {
+            "adUnitName": "pubmatic_test4",
+            "sizes": [ [300, 250], [728, 90], [160, 600] ]
+        }
+    },
+    "mapping": {
+        "htSlotID-1": [ "xSlot1" ],
+        "htSlotID-2": [ "xSlot2", "xSlot3" ]
+    }
+}
