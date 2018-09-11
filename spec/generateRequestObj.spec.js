@@ -220,7 +220,8 @@ describe('generateRequestObj', function () {
             //test cases for payload.imp object
             var payload = requestObject.data,
                 noMatch = false,
-                sizes;
+                sizes,
+                sizeIndex = 0;
             payload = payload.imp;
             returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
             expect(payload).to.exist.and.to.be.an('array').with.length.above(0);
@@ -228,6 +229,7 @@ describe('generateRequestObj', function () {
             payload.forEach(obj => {
                 noMatch = true;
                 returnParcels.forEach(rp => {
+                    sizeIndex = 0;
                     if (noMatch) {
                         if(rp.htSlot.getId() === obj.id) {
                             sizes = rp.xSlotRef.sizes;
@@ -237,16 +239,19 @@ describe('generateRequestObj', function () {
                                 expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
                                 expect(obj.ext).to.exist.and.to.be.an('object');
                                 expect(obj.banner).to.exist.and.to.be.an('object');
-                                expect(obj.banner.w).to.exist.and.to.equal(sizes[0][0]);
-                                expect(obj.banner.h).to.exist.and.to.equal(sizes[0][1]);
-                                if (sizes.length > 1) {
-                                    expect(obj.banner.format).to.exist.and.to.be.an('array').with.length.above(0);
-                                    expect(obj.banner.format.length).to.equal(sizes.length-1);
-                                    for(var j=1; j<sizes.length; j++) {
-                                        expect(obj.banner.format[j-1].w).to.equal(sizes[j][0]);
-                                        expect(obj.banner.format[j-1].h).to.equal(sizes[j][1]);
+
+                                sizes.forEach(function(size) {
+                                    if (size.length === 2) {
+                                        if (sizeIndex === 0) {
+                                            expect(obj.banner.w).to.exist.and.to.equal(size[0]);
+                                            expect(obj.banner.h).to.exist.and.to.equal(size[1]);
+                                        } else {
+                                            expect(obj.banner.format[sizeIndex-1].w).to.equal(size[0]);
+                                            expect(obj.banner.format[sizeIndex-1].h).to.equal(size[1]);
+                                        }
                                     }
-                                }
+                                    sizeIndex++;
+                                });
                             }
                         }
                     }
