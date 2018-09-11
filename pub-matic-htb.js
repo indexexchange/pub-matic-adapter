@@ -77,9 +77,11 @@ function PubMaticHtb(configs) {
      function __populateImprObject(returnParcels) {
         var retArr = [],
             impObj = {},
-            sizes = [];
+            sizes = [],
+            sizeIndex = 0;
 
         returnParcels.forEach(function(rp) {
+            sizeIndex = 0;
             impObj = {
                 id:  rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
@@ -90,23 +92,23 @@ function PubMaticHtb(configs) {
                 }
             }
             sizes = rp.xSlotRef.sizes;
-            if (sizes.length > 0) {
-                if (sizes[0].length > 0) {
-                    impObj.banner = {
-                        w: sizes[0][0],
-                        h: sizes[0][1]
+            impObj.banner = {};
+            impObj.banner.format = [];
+            sizes.forEach(function(size) {
+                if (size.length === 2) {
+                    if (sizeIndex === 0) {
+                        impObj.banner.w = size[0];
+                        impObj.banner.h = size[1];
+                        sizeIndex++;
+                    } else {
+                        impObj.banner.format.push({w: size[0], h: size[1]});
                     }
                 } else {
-                    console.log("PubMatic: Error in sizes array");
+                    console.log("Ignoring invalid size param " + size);
                 }
-                sizes = sizes.slice(1, sizes.length);
-
-                if (sizes.length > 0) {
-                    impObj.banner.format = [];
-                    sizes.forEach(function(size) {
-                        impObj.banner.format.push({w: size[0], h: size[1]});
-                    });
-                }
+            });
+            if (impObj.banner.format.length === 0) {
+                delete impObj.banner.format;
             }
             retArr.push(impObj);
         });
@@ -203,7 +205,6 @@ function PubMaticHtb(configs) {
      * @return {object}
      */
     function __generateRequestObj(returnParcels) {
-
         /* =============================================================================
          * STEP 2  | Generate Request URL
          * -----------------------------------------------------------------------------
