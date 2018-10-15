@@ -73,11 +73,14 @@ function generateReturnParcels(profile, partnerConfig) {
 function getExpectedAdEntry(mockData) {
     var expectedAdEntry = [];
 
-    for(var i = 0; i < mockData.length; i++) {
-        expectedAdEntry[i] = {};
+    for(var i = 0; i < mockData.seatbid.length; i++) {
+      for (var j = 0; j < mockData.seatbid[i].bid.length; j++) {
+        var e = {};
 
-        expectedAdEntry[i].price = mockData[i].price;
-        expectedAdEntry[i].dealId = mockData[i].dealid;
+        e.price = mockData.seatbid[i].bid[j].price;
+        e.dealId = mockData.seatbid[i].bid[j].dealid;
+        expectedAdEntry.push(e);
+      }
     }
 
     return expectedAdEntry;
@@ -95,7 +98,7 @@ describe('parseResponse', function () {
     var proxyquire = require('proxyquire').noCallThru();
     var libraryStubData = require('./support/libraryStubData.js');
     var partnerModule = proxyquire('../pub-matic-htb.js', libraryStubData);
-    var partnerConfig = require('./support/mockPartnerConfig.json');
+    var partnerConfig = require('./support/mockPartnerConfig2.json');
     var expect = require('chai').expect;
     var Size = libraryStubData['size.js'];
     var fs = require('fs');
@@ -126,7 +129,7 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData2.json')));
             mockData = responseData;
         });
 
@@ -206,7 +209,7 @@ describe('parseResponse', function () {
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
 
             //reset mockdata here
-            mockData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            mockData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData2.json')));
             for (i = 0; i < returnParcels.length; i++) {
                 currRp = returnParcels[i];
                 /* IF MRA, parse one parcel at a time */
@@ -287,7 +290,7 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData2.json')));
             mockData = responseData;
         });
 
@@ -295,13 +298,13 @@ describe('parseResponse', function () {
             registerAd.restore();
         });
 
-        //debugger;
         it('each parcel should have the required fields set', function () {
 
           // As we are expecting no matching bid, change the bid id so it doesn't match
-          //mockData.seatbid[0].bid[0].impid = mockData.seatbid[0].bid[0].impid + "1";
-          for (var i=0;i <mockData.seatbid[0].bid.length; i++) {
-            mockData.seatbid[0].bid[i].impid = mockData.seatbid[0].bid[i].impid + "1";
+          for (var i=0;i <mockData.seatbid.length; i++) {
+            for (var j=0;j < mockData.seatbid[i].bid.length; j++) {
+              mockData.seatbid[i].bid[j].impid = mockData.seatbid[i].bid[j].impid + "1";
+            }
           }
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture) partnerModule.parseResponse(1, mockData, returnParcels);
@@ -350,9 +353,13 @@ describe('parseResponse', function () {
             var i, expectedAdEntry = {};
 
             // As we are expecting no matching bid, change the bid id so it doesn't match
-            for (var i=0;i <mockData.seatbid[0].bid.length; i++) {
-                mockData.seatbid[0].bid[i].impid = mockData.seatbid[0].bid[i].impid + "1";
+            for (var i=0;i <mockData.seatbid.length; i++) {
+              for (var j=0;j<mockData.seatbid[i].bid.length;j++)
+                mockData.seatbid[i].bid[j].impid = mockData.seatbid[i].bid[j].impid + "1";
             }
+
+            expect(registerAd).to.not.have.been.called;
+            return;
 
             /* IF SRA, parse all parcels at once */
             if (partnerProfile.architecture === 1 || partnerProfile.architecture === 2) {
@@ -379,7 +386,7 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData2.json')));
             mockData = responseData;
         });
 
@@ -505,7 +512,7 @@ describe('parseResponse', function () {
             returnParcels = generateReturnParcels(partnerModule.profile, partnerConfig);
 
             /* Get mock response data from our responseData file */
-            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData.json')));
+            responseData = JSON.parse(fs.readFileSync(path.join(__dirname, './support/mockResponseData2.json')));
             mockData = responseData.dealid;
         });
 

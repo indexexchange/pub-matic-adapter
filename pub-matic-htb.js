@@ -16,7 +16,6 @@
 // Dependencies ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
-var BidTransformer = require('bid-transformer.js');
 var Browser = require('browser.js');
 var Classify = require('classify.js');
 var Constants = require('constants.js');
@@ -24,7 +23,9 @@ var Partner = require('partner.js');
 var Size = require('size.js');
 var SpaceCamp = require('space-camp.js');
 var System = require('system.js');
+var Network = require('network.js');
 var Utilities = require('utilities.js');
+var ComplianceService;
 var EventsService;
 var RenderService;
 
@@ -65,13 +66,7 @@ function PubMaticHtb(configs) {
      * @private {object}
      */
     var __profile;
-
-    /**
-     * Instances of BidTransformer for transforming bids.
-     *
-     * @private {object}
-     */
-    var __bidTransformers;
+    var __globalConfigs;
 
     /* =====================================
      * Functions
@@ -79,8 +74,117 @@ function PubMaticHtb(configs) {
 
     /* Utilities
      * ---------------------------------- */
+     function __populateImprObject(returnParcels) {
+        var retArr = [],
+            impObj = {},
+            sizes = [];
 
-    /**
+        returnParcels.forEach(function(rp) {
+            impObj = {
+                id:  rp.htSlot.getId(),
+                tagId: rp.xSlotRef.adUnitName,
+                secure: Browser.getProtocol() === "https:" ? 1 : 0,
+                bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
+                ext: {
+                    pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
+                }
+            }
+            sizes = rp.xSlotRef.sizes[0];
+            if (sizes.length > 0) {
+                impObj.banner = {
+                    w: sizes[0],
+                    h: sizes[1]
+                }
+            } else {
+                console.log("PubMatic: Error in sizes array");
+            }
+            retArr.push(impObj);
+        });
+        return retArr;
+    }
+
+	function _parseSlotParam (paramName, paramValue) {
+      if (!Utilities.isString(paramValue)) {
+        paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+        return undefined;
+      }
+
+      switch (paramName) {
+        case 'pmzoneid':
+          return paramValue.split(',')
+                    .slice(0, 50)
+                    .map(function(id) {
+                      return id.trim()
+                    })
+                    .join();
+        case 'kadfloor':
+        case 'lat':
+        case 'lon':
+          return parseFloat(paramValue) || undefined;
+        case 'yob':
+          return parseInt(paramValue) || undefined;
+        default:
+          return paramValue;
+      }
+    }
+
+    function __populateSiteObject(publisherId) {
+        var retObj =
+        {
+            page: Browser.topWindow.location.href,
+            ref: Browser.topWindow.document.referrer,
+            publisher: {
+                id: publisherId, // mandatory
+                domain: Browser.topWindow.location.hostname
+            },
+            domain: Browser.topWindow.location.hostname
+        }
+        return retObj;
+    }
+
+    function __populateDeviceInfo(rp){
+        var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' ||
+                    Browser.topWindow.navigator.doNotTrack == '1' ||
+                    Browser.topWindow.navigator.msDoNotTrack == '1')
+                    ? 1 : 0;
+        return {
+            ua: Browser.getUserAgent(),
+            js: 1,
+            dnt: dnt,
+            h: Browser.getScreenHeight(),
+            w: Browser.getScreenWidth(),
+            language: Browser.getLanguage(),
+            geo: {
+                lat: _parseSlotParam('lat', __globalConfigs.lat),
+                lon: _parseSlotParam('lon', __globalConfigs.lon),
+            }
+        }
+    }
+
+    function __populateUserInfo(rp) {
+        return {
+            gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
+            geo: {
+                lat: _parseSlotParam('lat', __globalConfigs.lat),
+                lon: _parseSlotParam('lon', __globalConfigs.lon),
+            },
+            yob: _parseSlotParam('yob', __globalConfigs.yob)
+        };
+    }
+
+    function __populateExtObject(rp) {
+        var ext = {};
+        ext.wrapper = {};
+        ext.wrapper.profile = __globalConfigs.profile || undefined; // remove ? check if mandatory
+        ext.wrapper.version = __globalConfigs.version || undefined; // remove ? check if mandatory
+        ext.wrapper.wiid = __globalConfigs.wiid || undefined; //
+        //ext.wrapper.wv = Constants.REPO_AND_VERSION;
+        ext.wrapper.transactionId = __globalConfigs.transactionId;
+        ext.wrapper.wp = 'pbjs' ;
+
+        return ext;
+    }
+	/**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
      *
@@ -148,21 +252,57 @@ function PubMaticHtb(configs) {
          */
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
-        var queryObj = {};
-        var callbackId = System.generateUniqueId();
+        var payload = {},
+        callbackId = System.generateUniqueId(),
+        baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
+        payload = {
+            id: '' + new Date().getTime(), // str | mandatory
+            at: 1, // int | mandatory
+            cur: ['USD'], // [str] | opt
+            imp: __populateImprObject(returnParcels), // obj | mandatory - pending
+            site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
+            device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
+            user: __populateUserInfo(returnParcels[0]), // obj | opt
+            ext: __populateExtObject(returnParcels[0]) // not required?? - to be checked
+        }
 
-        /* Change this to your bidder endpoint.*/
-        var baseUrl = Browser.getProtocol() + '//someAdapterEndpoint.com/bid';
-
-        /* ---------------- Craft bid request using the above returnParcels --------- */
-
-
+        /* ------------------------ Get consent information -------------------------
+         * If you want to implement GDPR consent in your adapter, use the function
+         * ComplianceService.gdpr.getConsent() which will return an object.
+         *
+         * Here is what the values in that object mean:
+         *      - applies: the boolean value indicating if the request is subject to
+         *      GDPR regulations
+         *      - consentString: the consent string developed by GDPR Consent Working
+         *      Group under the auspices of IAB Europe
+         *
+         * The return object should look something like this:
+         * {
+         *      applies: true,
+         *      consentString: "BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA"
+         * }
+         */
+        var isPrivacyEnabled = ComplianceService.isPrivacyEnabled();
+        if (isPrivacyEnabled) {
+            var gdprStatus = ComplianceService.gdpr.getConsent();
+            payload.user.ext = {
+                consent: gdprStatus.consentString
+            }
+            payload.regs = {
+                ext: {
+                    gdpr: gdprStatus.applies ? 1 : 0
+                }
+            }
+        }
         /* -------------------------------------------------------------------------- */
-
         return {
             url: baseUrl,
-            data: queryObj,
-            callbackId: callbackId
+            data: payload,
+            callbackId: callbackId,
+            networkParamOverrides: {
+              method: 'POST',
+              contentType: 'text/plain'
+            }
         };
     }
 
@@ -188,17 +328,22 @@ function PubMaticHtb(configs) {
      * ---------------------------------- */
 
     /* =============================================================================
-     * STEP 5  | Rendering
+     * STEP 5  | Rendering Pixel
      * -----------------------------------------------------------------------------
      *
-     * This function will render the ad given. Usually need not be changed unless
-     * special render functionality is needed.
-     *
-     * @param  {Object} doc The document of the iframe where the ad will go.
-     * @param  {string} adm The ad code that came with the original demand.
+    */
+
+     /**
+     * This function will render the pixel given.
+     * @param  {string} pixelUrl Tracking pixel img url.
      */
-    function __render(doc, adm) {
-        System.documentWrite(doc, adm);
+    function __renderPixel(pixelUrl) {
+        if (pixelUrl){
+            Network.img({
+                url: decodeURIComponent(pixelUrl),
+                method: 'GET',
+            });
+        }
     }
 
     /**
@@ -215,8 +360,6 @@ function PubMaticHtb(configs) {
      * attached to each one of the objects for which the demand was originally requested for.
      */
     function __parseResponse(sessionId, adResponse, returnParcels) {
-
-        var unusedReturnParcels = returnParcels.slice();
 
         /* =============================================================================
          * STEP 4  | Parse & store demand response
@@ -237,38 +380,57 @@ function PubMaticHtb(configs) {
          *
          */
 
-         /* ---------- Process adResponse and extract the bids into the bids array ------------*/
+        /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
-        var bids = adResponse;
+        var bids = [];
+        if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid)
+          && adResponse.seatbid.length > 0) {
+            for (var i = 0; i < adResponse.seatbid.length; i++) {
+              bids = bids.concat(adResponse.seatbid[i].bid);
+            }
+          }
 
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
+
             var curReturnParcel = returnParcels[j];
 
-            /* ----------- Fill this out to find a matching bid for the current parcel ------------- */
+            var headerStatsInfo = {};
+            var htSlotId = curReturnParcel.htSlot.getId();
+            headerStatsInfo[htSlotId] = {};
+            headerStatsInfo[htSlotId][curReturnParcel.requestId] = [curReturnParcel.xSlotName];
+
             var curBid;
+            var sizes;
+
+            if(!bids
+              || !Utilities.isArray(bids)
+              || bids.length === 0
+            ) {
+                if (__profile.enabledAnalytics.requestTime) {
+                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
+                }
+                curReturnParcel.pass = true;
+                continue;
+            }
 
             for (var i = 0; i < bids.length; i++) {
-
+                sizes = curReturnParcel.xSlotRef.sizes[0];
                 /**
                  * This section maps internal returnParcels and demand returned from the bid request.
                  * In order to match them correctly, they must be matched via some criteria. This
                  * is usually some sort of placements or inventory codes. Please replace the someCriteria
                  * key to a key that represents the placement in the configuration and in the bid responses.
                  */
-
-                if (curReturnParcel.xSlotRef.someCriteria === bids[i].someCriteria) {
-                    curBid = bids[i];
-                    break;
+                if (bids[i].impid === curReturnParcel.htSlot.getId()) {
+                    if (parseInt(bids[i].w) === parseInt(sizes[0]) && parseInt(bids[i].h) === parseInt(sizes[1])) {
+                        curBid = bids[i];
+                        bids.splice(i, 1);
+                        break;
+                    }
                 }
             }
-
-            /* ------------------------------------------------------------------------------------*/
-
-            /* HeaderStats information */
-            var headerStatsInfo = {};
-            headerStatsInfo[curReturnParcel.htSlot.getId()] = [curReturnParcel.xSlotName];
 
             /* No matching bid found so its a pass */
             if (!curBid) {
@@ -280,15 +442,43 @@ function PubMaticHtb(configs) {
             }
 
             /* ---------- Fill the bid variables with data from the bid response here. ------------*/
+
             /* Using the above variable, curBid, extract various information about the bid and assign it to
-            * these local variables */
+             * these local variables */
 
-            var bidPrice = curBid.price; /* the bid price for the given slot */
-            var bidSize = [curBid.width, curBid.height]; /* the size of the given slot */
-            var bidCreative = curBid.adm; /* the creative/adm for the given slot that will be rendered if is the winner. */
+            /* the bid price for the given slot */
+            var bidPrice = curBid.price;
+
+            /* the size of the given slot */
+            var bidSize = [Number(curBid.w), Number(curBid.h)];
+
+            /* the creative/adm for the given slot that will be rendered if is the winner.
+             * Please make sure the URL is decoded and ready to be document.written.
+             */
+            var bidCreative = curBid.adm;
+
             var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
+            /* explicitly pass */
+            var bidIsPass = bidPrice <= 0 ? true : false;
 
+            /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
+            * If firing a tracking pixel is not required or the pixel url is part of the adm,
+            * leave empty;
+            */
+            var pixelUrl = '';
             /* ---------------------------------------------------------------------------------------*/
+
+            curBid = null;
+            if (bidIsPass) {
+                //? if (DEBUG) {
+                Scribe.info(__profile.partnerId + ' returned pass for { id: ' + adResponse.id + ' }.');
+                //? }
+                if (__profile.enabledAnalytics.requestTime) {
+                    __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
+                }
+                curReturnParcel.pass = true;
+                continue;
+            }
 
             if (__profile.enabledAnalytics.requestTime) {
                 __baseClass._emitStatsEvent(sessionId, 'hs_slot_bid', headerStatsInfo);
@@ -298,8 +488,10 @@ function PubMaticHtb(configs) {
             curReturnParcel.targetingType = 'slot';
             curReturnParcel.targeting = {};
 
+            var targetingCpm = '';
+
             //? if (FEATURES.GPT_LINE_ITEMS) {
-            var targetingCpm = __bidTransformers.targeting.apply(bidPrice);
+            targetingCpm = __baseClass._bidTransformers.targeting.apply(bidPrice);
             var sizeKey = Size.arrayToString(curReturnParcel.size);
 
             if (bidDealId) {
@@ -309,45 +501,33 @@ function PubMaticHtb(configs) {
                 curReturnParcel.targeting[__baseClass._configs.targetingKeys.om] = [sizeKey + '_' + targetingCpm];
             }
             curReturnParcel.targeting[__baseClass._configs.targetingKeys.id] = [curReturnParcel.requestId];
-
-            if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_SIZE) {
-                RenderService.registerAdByIdAndSize(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId, bidSize
-                );
-            } else if (__baseClass._configs.lineItemType === Constants.LineItemTypes.ID_AND_PRICE) {
-                RenderService.registerAdByIdAndPrice(
-                    sessionId,
-                    __profile.partnerId,
-                    __render, [bidCreative],
-                    '',
-                    __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
-                    curReturnParcel.requestId,
-                    targetingCpm
-                );
-            }
             //? }
 
             //? if (FEATURES.RETURN_CREATIVE) {
             curReturnParcel.adm = bidCreative;
+            if (pixelUrl) {
+                curReturnParcel.winNotice = __renderPixel.bind(null, pixelUrl);
+            }
             //? }
 
             //? if (FEATURES.RETURN_PRICE) {
-            curReturnParcel.price = Number(__bidTransformers.price.apply(bidPrice));
+            curReturnParcel.price = Number(__baseClass._bidTransformers.price.apply(bidPrice));
             //? }
 
+            var pubKitAdId = RenderService.registerAd({
+                sessionId: sessionId,
+                partnerId: __profile.partnerId,
+                adm: bidCreative,
+                requestId: curReturnParcel.requestId,
+                size: curReturnParcel.size,
+                price: targetingCpm,
+                dealId: bidDealId || undefined,
+                timeOfExpiry: __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
+                auxFn: __renderPixel,
+                auxArgs: [pixelUrl]
+            });
+
             //? if (FEATURES.INTERNAL_RENDER) {
-            var pubKitAdId = RenderService.registerAd(
-                sessionId,
-                __profile.partnerId,
-                __render, [bidCreative],
-                '',
-                __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0
-            );
             curReturnParcel.targeting.pubKitAdId = pubKitAdId;
             //? }
         }
@@ -360,6 +540,7 @@ function PubMaticHtb(configs) {
     (function __constructor() {
         EventsService = SpaceCamp.services.EventsService;
         RenderService = SpaceCamp.services.RenderService;
+        ComplianceService = SpaceCamp.services.ComplianceService;
 
         /* =============================================================================
          * STEP 1  | Partner Configuration
@@ -370,34 +551,35 @@ function PubMaticHtb(configs) {
 
         /* ---------- Please fill out this partner profile according to your module ------------*/
         __profile = {
-            partnerId: 'PubMaticHtb', // PartnerName
-            namespace: 'PubMaticHtb', // Should be same as partnerName
+            partnerId: 'PubmaticHtb', // PartnerName
+            namespace: 'PubmaticHtb', // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.0.0',
+            version: '2.1.1',
             targetingType: 'slot',
             enabledAnalytics: {
-                requestTime: true
+                requestTime: !0
             },
             features: {
                 demandExpiry: {
-                    enabled: false,
+                    enabled: !1,
                     value: 0
                 },
                 rateLimiting: {
-                    enabled: false,
+                    enabled: !1,
                     value: 0
                 }
             },
             targetingKeys: { // Targeting keys for demand, should follow format ix_{statsId}_id
                 id: 'ix_pubm_id',
-                om: 'ix_pubm_cpm',
-                pm: 'ix_pubm_cpm',
+                om: 'ix_pubm_om',
+                pm: 'ix_pubm_om',
                 pmid: 'ix_pubm_dealid'
             },
+            bidUnitInCents: 100, // The bid price unit (in cents) the endpoint returns, please refer to the readme for details
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
-            callbackType: Partner.CallbackTypes.ID, // Callback type, please refer to the readme for details
+            callbackType: Partner.CallbackTypes.NONE, // Callback type, please refer to the readme for details
             architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
-            requestType: Partner.RequestTypes.ANY // Request type, jsonp, ajax, or any.
+            requestType: Partner.RequestTypes.AJAX // Request type, jsonp, ajax, or any.
         };
         /* ---------------------------------------------------------------------------------------*/
 
@@ -408,61 +590,17 @@ function PubMaticHtb(configs) {
             throw Whoopsie('INVALID_CONFIG', results);
         }
         //? }
-
-        /*
-         * Adjust the below bidTransformerConfigs variable to match the units the adapter
-         * sends bids in and to match line item setup. This configuration variable will
-         * be used to transform the bids going into DFP.
-         */
-
-        /* - Please fill out this bid trasnformer according to your module's bid response format - */
-        var bidTransformerConfigs = {
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            targeting: {
-                inputCentsMultiplier: 1, // Input is in cents
-                outputCentsDivisor: 1, // Output as cents
-                outputPrecision: 0, // With 0 decimal places
-                roundingType: 'FLOOR', // jshint ignore:line
-                floor: 0,
-                buckets: [{
-                    max: 2000, // Up to 20 dollar (above 5 cents)
-                    step: 5 // use 5 cent increments
-                }, {
-                    max: 5000, // Up to 50 dollars (above 20 dollars)
-                    step: 100 // use 1 dollar increments
-                }]
-            },
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            price: {
-                inputCentsMultiplier: 1, // Input is in cents
-                outputCentsDivisor: 1, // Output as cents
-                outputPrecision: 0, // With 0 decimal places
-                roundingType: 'NONE',
-            },
-            //? }
-        };
-
-        /* --------------------------------------------------------------------------------------- */
-
-        if (configs.bidTransformer) {
-            //? if (FEATURES.GPT_LINE_ITEMS) {
-            bidTransformerConfigs.targeting = configs.bidTransformer;
-            //? }
-            //? if (FEATURES.RETURN_PRICE) {
-            bidTransformerConfigs.price.inputCentsMultiplier = configs.bidTransformer.inputCentsMultiplier;
-            //? }
+        __globalConfigs = {
+            pubId: configs.publisherId,
+            /* Pubmatic specific values. required in the api request */
+            lat: configs.lat || undefined,
+            lon: configs.lon || undefined,
+            yob: configs.yob || undefined,
+            gender: configs.gender || undefined,
+            kadfloor: configs.kadfloor || undefined,
+            profile: configs.profile || undefined,
+            version: configs.version || undefined
         }
-
-        __bidTransformers = {};
-
-        //? if (FEATURES.GPT_LINE_ITEMS) {
-        __bidTransformers.targeting = BidTransformer(bidTransformerConfigs.targeting);
-        //? }
-        //? if (FEATURES.RETURN_PRICE) {
-        __bidTransformers.price = BidTransformer(bidTransformerConfigs.price);
-        //? }
-
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
             generateRequestObj: __generateRequestObj,
@@ -497,7 +635,6 @@ function PubMaticHtb(configs) {
          * ---------------------------------- */
 
         //? if (TEST) {
-        render: __render,
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
         adResponseCallback: adResponseCallback,

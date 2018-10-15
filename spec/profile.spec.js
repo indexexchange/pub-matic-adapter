@@ -26,20 +26,21 @@ describe('Partner Profile', function () {
 
     /* Setup and Library Stub
      * ------------------------------------------------------------- */
-    var inspector = require('schema-inspector');
-    var proxyquire = require('proxyquire').noCallThru();
-    var libraryStubData = require('./support/libraryStubData.js');
-    var partnerModule = proxyquire('../pub-matic-htb.js', libraryStubData);
-    var partnerConfig = require('./support/mockPartnerConfig.json');
-    var expect = require('chai').expect;
+    var inspector = require('schema-inspector'),
+    proxyquire = require('proxyquire').noCallThru(),
+    libraryStubData = require('./support/libraryStubData.js'),
+    partnerModule = proxyquire('../pub-matic-htb.js', libraryStubData),
+    partnerConfig = require('./support/mockPartnerConfig.json'),
+    expect = require('chai').expect,
+    consts = libraryStubData['constants.js'],
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
-    var partnerModule = partnerModule(partnerConfig);
-    var partnerProfile = partnerModule.profile;
+    partnerModule = partnerModule(partnerConfig),
+    partnerProfile = partnerModule.profile,
 
     /* partner module profile tests */
-    var profile = partnerProfile;
+    profile = partnerProfile;
 
     /* Simple type checking on the returned objects, should always pass */
     it('should be configured correctly', function () {
@@ -49,7 +50,7 @@ describe('Partner Profile', function () {
             properties: {
                 partnerId: {
                     type: 'string',
-                    eq: 'PubMaticHtb'
+                    eq: "PubMaticHtb"
                 },
                 namespace: {
                     type: 'string',
@@ -60,11 +61,12 @@ describe('Partner Profile', function () {
                     eq: 'PUBM'
                 },
                 version: {
-                    type: 'string'
+                    type: 'string',
+                    eq: '2.1.0'
                 },
                 targetingType: {
                     type: 'string',
-                    eq: 'slot'
+                    eq: "slot"
                 },
                 enabledAnalytics: {
                     type: 'object',
@@ -102,7 +104,7 @@ describe('Partner Profile', function () {
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
                                     targetingSplit[2] !== 'id') {
-                                    this.report('id tageting key should be of the format ix_{PUBM}_id')
+                                    this.report('id targeting key should be of the format ix_{PUBM}_id')
                                 }
                             }
                         },
@@ -113,8 +115,8 @@ describe('Partner Profile', function () {
 
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
-                                    targetingSplit[2] !== 'cpm') {
-                                    this.report('om tageting key should be of the format ix_PUBM_cpm')
+                                    targetingSplit[2] !== 'om') {
+                                    this.report('om targeting key should be of the format ix_PUBM_om')
                                 }
                             }
                         },
@@ -125,8 +127,8 @@ describe('Partner Profile', function () {
 
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
-                                    targetingSplit[2] !== 'cpm') {
-                                    this.report('pm tageting key should be of the format ix_PUBM_cpm')
+                                    targetingSplit[2] !== 'om') {
+                                    this.report('pm targeting key should be of the format ix_PUBM_om')
                                 }
                             }
                         },
@@ -138,9 +140,18 @@ describe('Partner Profile', function () {
                                 if (targetingSplit[0] !== 'ix' ||
                                     targetingSplit[1] !== profile.statsId.toLowerCase() ||
                                     targetingSplit[2] !== 'dealid') {
-                                    this.report('pmid tageting key should be of the format ix_PUBM_dealid')
+                                    this.report('pmid targeting key should be of the format ix_PUBM_dealid')
                                 }
                             }
+                        }
+                    }
+                },
+                bidUnitInCents: {
+                    type: 'number',
+                    gt: 0,
+                    exec: function (schema, post) {
+                        if ((post > 1 && post % 10 !== 0) || (post < 1 && !/^0\.0*1$/.test(post.toString()))) {
+                            this.report('bidUnitInCents should be a multiple of 10')
                         }
                     }
                 },

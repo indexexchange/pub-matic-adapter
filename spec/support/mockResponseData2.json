@@ -1,0 +1,52 @@
+{
+  "id": "1525982536538",
+  "seatbid": [
+    {
+      "bid": [
+        {
+          "id": "91CB3693-DEF7-423E-A3D6-14D13B94BFAF",
+          "impid": "8b03f608-c5f4-6dc6-5bb6-3097d508c0aa",
+          "price": 1.2,
+          "adm": "<span class=\"PubAPIAd\"  id=\"91CB3693-DEF7-423E-A3D6-14D13B94BFAF\"><a href=\"http://www.pubmatic.com\"><img src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"></a><iframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1&pubId=156209&siteId=188952&adId=1225801&adType=10&adServerId=165&kefact=1.200000&kaxefact=1.200000&kadNetFrequecy=0&kadwidth=300&kadheight=250&kadsizeid=225&kltstamp=1525982536&indirectAdId=1010494&adServerOptimizerId=1&ranreq=0.1&kpbmtpfact=0.000000&dcId=1&tldId=0&passback=25&svr=BID77417&ekefact=SKX0WhbTCQBz539OTzDtlOaRiuo0TOw0oT5hXCoHEx3dXKcQ&ekaxefact=SKX0Wi3TCQAwcTzfA6TzPpaK_hC24UcE3CrhvmuSSiv6-kMK&ekpbmtpfact=SKX0Wj_TCQBwNI5bEUAPI_SY6jGjzIb2UMzqPCjrDQ9PJ17c&imprId=91CB3693-DEF7-423E-A3D6-14D13B94BFAF&oid=91CB3693-DEF7-423E-A3D6-14D13B94BFAF&carrierid=24&crID=0&cntryId=232&campaignId=0&isRTB=0&pageURL=http%3A%2F%2Fsandbox.ht.indexexchange.com%2Fht%2Fpubmatic-test-page.html\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"></iframe></span> <!-- PubMatic Ad Ends -->",
+          "h": 250,
+          "w": 300,
+          "ext": {}
+        },
+        {
+          "id": "ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD",
+          "impid": "a2a7eaf4-910b-9ffe-3cc9-c46aa635582c",
+          "price": 1.2,
+          "adm": "<span class=\"PubAPIAd\"  id=\"ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD\"><a href=\"http://www.pubmatic.com\"><img src=\"http://www.chowla.com/prebid-test/300x250-test-ad.png\"></a><iframe width=\"0\" scrolling=\"no\" height=\"0\" frameborder=\"0\" src=\"http://aktrack.pubmatic.com/AdServer/AdDisplayTrackerServlet?operId=1&pubId=156209&siteId=188952&adId=1225801&adType=10&adServerId=165&kefact=1.200000&kaxefact=1.200000&kadNetFrequecy=0&kadwidth=300&kadheight=250&kadsizeid=225&kltstamp=1525982536&indirectAdId=1010494&adServerOptimizerId=1&ranreq=0.1&kpbmtpfact=0.000000&dcId=1&tldId=0&passback=25&svr=BID77428&ekefact=SKX0WpgNCgDInekf8TUwOnYCUb82k-g0t48F0OPhFO89uwde&ekaxefact=SKX0WrENCgCAZmagZOAmURoqvf6INKAKAZ_P5WFWGPjdg1Dw&ekpbmtpfact=SKX0Wr8NCgDGNNT5biqIHw8wihdUmg3Iv8WNaiu6N-1mG0eG&imprId=ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD&oid=ADC788D3-1CEE-4307-B085-1A1C4F2BA5CD&carrierid=24&crID=0&cntryId=232&campaignId=0&isRTB=0&pageURL=http%3A%2F%2Fsandbox.ht.indexexchange.com%2Fht%2Fpubmatic-test-page.html\" style=\"position:absolute;top:-15000px;left:-15000px\" vspace=\"0\" hspace=\"0\" marginwidth=\"0\" marginheight=\"0\" allowtransparency=\"true\" name=\"pbeacon\"></iframe></span> <!-- PubMatic Ad Ends -->",
+          "h": 250,
+          "w": 300,
+          "ext": {}
+        }
+      ],
+      "seat": "pubmatic"
+    },
+    {
+      "bid": [
+        {
+          "id": "8703CAB6-8439-4977-90DF-F2793963BE7A",
+          "impid": "a2a7eaf4-910b-9ffe-3cc9-c46aa635582c",
+          "price": 4.091119,
+          "adm": "test",
+          "adomain": [
+            "test.com"
+          ],
+          "iurl": "http://googleads.g.doubleclick.net/dbm/ad?dbm_p=abc",
+          "cid": "34779",
+          "crid": "903791200171",
+          "h": 90,
+          "w": 728,
+          "ext": {
+            "dspid": 80,
+            "advid": 138039
+          }
+        }
+      ],
+      "seat": "7473"
+    }
+  ],
+  "cur": "USD"
+}

@@ -26,28 +26,44 @@
  * @returns []
  */
 function generateReturnParcels(profile, partnerConfig) {
-    var returnParcels = [];
+    var returnParcels = [],
+        utils = require('./support/libraryStubData.js'),
+        system = utils['system.js'],
+        xSlotName,
+        xSlotsArray,
+        htSlot,
+        htSlotName,
+        xSlotRef;
 
-    for (var htSlotName in partnerConfig.mapping) {
-        if (partnerConfig.mapping.hasOwnProperty(htSlotName)) {
-            var xSlotsArray = partnerConfig.mapping[htSlotName];
-            for (var i = 0; i < xSlotsArray.length; i++) {
-                var xSlotName = xSlotsArray[i];
+    for (htSlotName in partnerConfig.mapping) {
+        xSlotsArray = partnerConfig.mapping[htSlotName];
+        htSlot = {
+            id: htSlotName, //htSlotID-1 / htSlotID-2
+            getId: function () {
+                return this.id;
+            }
+        }
+
+        for (var i = 0; i < xSlotsArray.length; i++) {
+            xSlotName = xSlotsArray[i];
+            xSlotRef = partnerConfig.xSlots[xSlotName];
+            for (var ii=0; ii<xSlotRef.sizes.length; ii++) {
                 returnParcels.push({
+                    pubId: partnerConfig.publisherId,
                     partnerId: profile.partnerId,
-                    htSlot: {
-                        getId: function () {
-                            return htSlotName
-                        }
-                    },
+                    partnerStatsId: profile.statsId,
+                    htSlot: htSlot,
                     ref: "",
-                    xSlotRef: partnerConfig.xSlots[xSlotName],
-                    requestId: '_' + Date.now()
+                    xSlotName: xSlotName,
+                    xSlotRef: {
+                        adUnitName: xSlotRef.adUnitName,
+                        sizes: [xSlotRef.sizes[ii]],
+                    },
+                    requestId: system.generateUniqueId()
                 });
             }
         }
     }
-
     return returnParcels;
 }
 
@@ -59,22 +75,26 @@ describe('generateRequestObj', function () {
 
     /* Setup and Library Stub
      * ------------------------------------------------------------- */
-    var inspector = require('schema-inspector');
-    var proxyquire = require('proxyquire').noCallThru();
-    var libraryStubData = require('./support/libraryStubData.js');
-    var partnerModule = proxyquire('../pub-matic-htb.js', libraryStubData);
-    var partnerConfig = require('./support/mockPartnerConfig.json');
-    var expect = require('chai').expect;
+    var inspector = require('schema-inspector'),
+    proxyquire = require('proxyquire').noCallThru(),
+    libraryStubData = require('./support/libraryStubData.js'),
+    partnerModule = proxyquire('../pub-matic-htb.js', libraryStubData),
+    partnerConfig = require('./support/mockPartnerConfig.json'),
+    expect = require('chai').expect,
+    browser = libraryStubData['browser.js'],
+    complianceService = libraryStubData['space-camp.js'],
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
-    var partnerModule = partnerModule(partnerConfig);
-    var partnerProfile = partnerModule.profile;
+    partnerModule = partnerModule(partnerConfig),
+    partnerProfile = partnerModule.profile,
 
     /* Generate dummy return parcels based on MRA partner profile */
-    var returnParcels;
-    var requestObject;
+    returnParcels,
+    requestObject,
+    endpoint = 'http://hbopenbid.pubmatic.com/translator?source=index-client';
 
+    complianceService = complianceService.services.ComplianceService;
     /* Generate a request object using generated mock return parcels. */
     returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
 
@@ -98,7 +118,10 @@ describe('generateRequestObj', function () {
                     callbackId: {
                         type: 'string',
                         minLength: 1
-                    }
+                    },
+                    networkParamOverrides: {
+			type: 'object'
+		    }
                 }
             }, requestObject);
 
@@ -114,11 +137,115 @@ describe('generateRequestObj', function () {
             */
 
         /* ---------- ADD MORE TEST CASES TO TEST AGAINST REAL VALUES ------------*/
-        it('should correctly build a url', function () {
+        it('request obj should have all required values', function () {
             /* Write unit tests to verify that your bid request url contains the correct
                 * request params, url, etc.
                 */
+            var domain = browser.topWindow.location.hostname;
+            var dnt = (browser.topWindow.navigator.doNotTrack == 'yes' ||
+                    browser.topWindow.navigator.doNotTrack == '1' ||
+                    browser.topWindow.navigator.msDoNotTrack == '1')
+                    ? 1 : 0;
+
             expect(requestObject).to.exist;
+            expect(requestObject.url).to.exist;
+            expect(requestObject.url).to.equal(endpoint)
+            expect(requestObject.callbackId).to.exist;
+
+            var payload = requestObject.data;
+            expect(payload).to.exist;
+            expect(payload.id).to.exist;
+            expect(payload.at).to.equal(1);
+            expect(payload.cur).to.be.an('array').with.length.above(0);
+            expect(payload.cur[0]).to.equal('USD');
+
+            expect(payload.imp).to.exist.and.to.be.an('array').with.length.above(0);
+
+            //test cases for payload.site object
+            expect(payload.site).to.exist.and.to.be.an('object');
+            expect(payload.site.page).to.and.equal(browser.topWindow.location.href);
+            expect(payload.site.ref).to.exist.and.equal(browser.topWindow.document.referrer);
+            expect(payload.site.publisher).to.exist.and.be.an('object');
+            expect(payload.site.publisher.id).to.exist.and.to.equal(partnerConfig.publisherId);
+            expect(payload.site.publisher.domain).to.exist.and.to.equal(domain);
+            expect(payload.site.domain).to.exist.and.to.equal(domain);
+
+            //test cases for payload.device object
+            expect(payload.device).to.exist.and.to.be.an('object');
+            expect(payload.device.ua).to.exist.and.to.equal(browser.getUserAgent());
+            expect(payload.device.js).to.exist.and.to.equal(1);
+            expect(payload.device.dnt).to.exist.and.to.equal(dnt);
+            expect(payload.device.h).to.exist.and.to.equal(browser.getScreenHeight());
+            expect(payload.device.w).to.exist.and.to.equal(browser.getScreenWidth());
+            expect(payload.device.language).to.exist.and.to.equal(browser.getLanguage());
+            expect(payload.device.geo).to.exist.and.to.be.an("object");
+            expect(payload.device.geo.lat).to.exist.and.to.equal(parseFloat(partnerConfig.lat));
+            expect(payload.device.geo.lon).to.exist.and.to.equal(parseFloat(partnerConfig.lon));
+
+            //test cases for payload.user object
+            expect(payload.user).to.exist;
+            expect(payload.user.gender).to.exist.and.to.equal(partnerConfig.gender);
+            expect(payload.user.geo).to.exist.and.to.be.an('object');
+            expect(payload.user.geo.lat).to.exist.and.to.equal(parseFloat(partnerConfig.lat));
+            expect(payload.user.geo.lon).to.exist.and.to.equal(parseFloat(partnerConfig.lon));
+            expect(payload.user.yob).to.exist.and.to.equal(parseInt(partnerConfig.yob));
+
+            //test cases for payload.ext object
+            expect(payload.ext).to.exist;
+            expect(payload.ext.wrapper).to.exist.and.to.be.an('object');
+            if (payload.ext.wrapper.profile) {
+                expect(payload.ext.wrapper.profile).to.equal(partnerConfig.profile);
+            }
+
+            if (payload.ext.wrapper.version) {
+                expect(payload.ext.wrapper.version).to.equal(partnerConfig.version);
+            }
+            expect(payload.ext.wrapper.wp).to.exist.and.to.equal('pbjs');
+
+            //test case for gdpr
+            var isPrivacyEnabled = complianceService.isPrivacyEnabled();
+            if (isPrivacyEnabled) {
+                var gdprStatus = complianceService.gdpr.getConsent();
+                expect(payload.user.ext.consent).to.exist.and.to.equal(gdprStatus.consentString);
+
+                expect(payload.regs).to.exist;
+                expect(payload.regs.ext.gdpr).to.exist.and.to.equal(gdprStatus.applies ? 1 : 0);
+            } else {
+                expect(payload.user.ext).to.not.exist;
+                expect(payload.reqs).to.not.exist;
+            }
+        });
+
+        it('request object should correctly map return parcels to impr objects', function(){
+            //test cases for payload.imp object
+            var payload = requestObject.data,
+                noMatch = false,
+                sizes;
+            payload = payload.imp;
+            returnParcels = generateReturnParcels(partnerProfile, partnerConfig);
+
+            expect(payload).to.exist.and.to.be.an('array').with.length.above(0);
+            expect(payload.length).to.equal(returnParcels.length);
+            payload.forEach(obj => {
+                noMatch = true;
+                returnParcels.forEach(rp => {
+                    if (noMatch) {
+                        if(rp.htSlot.getId() === obj.id) {
+                            sizes = rp.xSlotRef.sizes[0];
+                            if (parseInt(obj.banner.w) === parseInt(sizes[0]) && parseInt(obj.banner.h) === sizes[1]) {
+                                noMatch = false;
+                                expect(obj.tagId).to.equal(rp.xSlotRef.adUnitName);
+                                expect(obj.bidFloor).to.equal(parseFloat(partnerConfig.kadfloor));
+                                expect(obj.ext).to.exist.and.to.be.an('object');
+                                expect(obj.banner).to.exist.and.to.be.an('object');
+                                expect(obj.banner.w).to.exist.and.to.equal(sizes[0]);
+                                expect(obj.banner.h).to.exist.and.to.equal(sizes[1]);
+                            }
+                        }
+                    }
+                });
+                expect(noMatch).to.equal(false);
+            });
         });
         /* -----------------------------------------------------------------------*/
 

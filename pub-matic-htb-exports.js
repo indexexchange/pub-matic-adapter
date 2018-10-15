@@ -6,6 +6,12 @@
  *  window namespace here, but this is discouraged if it's not strictly needed.
  */
 
-shellInterface.PubMaticHtb = {
-    render: SpaceCamp.services.RenderService.renderDfpAd.bind(null, 'PubMaticHtb')
+//? if (FEATURES.GPT_LINE_ITEMS) {
+shellInterface.PubmaticHtb = {
+    render: SpaceCamp.services.RenderService.renderDfpAd.bind(null, 'PubmaticHtb')
 };
+
+shellInterface.PubmaticModule = {
+    render: SpaceCamp.services.RenderService.renderDfpAd.bind(null, 'PubmaticHtb')
+};
+//? }

@@ -1,27 +1,27 @@
 {
     "timeout": 1000,
+    "publisherId": "156209",
+    "lat":"40.712775",
+    "lon":"-74.005973",
+    "yob":"1982",
+    "gender":"M",
+    "kadfloor":"1.75",
     "xSlots": {
-        "1": {
-            "placementId": "54321",
-            "sizes": [
-                [300, 250]
-            ]
+        "xSlot1": {
+            "adUnitName": "pubmatic_test2",
+            "sizes": [ [300, 250], [728, 90] ]
         },
-        "2": {
-            "placementId": "12345",
-            "sizes": [
-                [300, 600]
-            ]
+        "xSlot2": {
+            "adUnitName": "pubmatic_test3",
+            "sizes": [ [300, 600] ]
         },
-        "3": {
-            "placementId": "654321",
-            "sizes": [
-                [728, 90]
-            ]
+        "xSlot3": {
+            "adUnitName": "pubmatic_test4",
+            "sizes": [ [300, 250] ]
         }
     },
     "mapping": {
-        "htSlot1": ["1", "2"],
-        "htSlot2": ["3"]
+        "htSlotID-1": [ "xSlot1" ],
+        "htSlotID-2": [ "xSlot2", "xSlot3" ]
     }
 }
