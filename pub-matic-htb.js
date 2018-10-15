@@ -74,14 +74,47 @@ function PubMaticHtb(configs) {
 
     /* Utilities
      * ---------------------------------- */
-     function __populateImprObject(returnParcels) {
+
+    funciton __getDigiTrustId(key){
+        function getDigiTrustId(key) {
+            let digiTrustUser = window.DigiTrust && (config.getConfig('digiTrustId') || window.DigiTrust.getUser({
+                member: key
+            }));
+            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) || null;
+        }
+        let digiTrustId = getDigiTrustId(key);
+        // Verify there is an ID and this user has not opted out
+        if (!digiTrustId || (digiTrustId.privacy && digiTrustId.privacy.optout)) {
+            return null;
+        }
+        return digiTrustId;
+    }
+
+    function __handleDigitrustId(eids) {
+        let digiTrustId = __getDigiTrustId(PUBMATIC_DIGITRUST_KEY);
+        if (digiTrustId !== null) {
+            eids.push({
+                'source': 'digitru.st',
+                'uids': [{
+                    'id': digiTrustId.id || '',
+                    'atype': 1,
+                    'ext': {
+                        'keyv': digiTrustId.keyv || ''
+                    }
+                }]
+            });
+        }
+    }
+
+
+    function __populateImprObject(returnParcels) {
         var retArr = [],
             impObj = {},
             sizes = [];
 
-        returnParcels.forEach(function(rp) {
+        returnParcels.forEach(function (rp) {
             impObj = {
-                id:  rp.htSlot.getId(),
+                id: rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
                 secure: Browser.getProtocol() === "https:" ? 1 : 0,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
@@ -103,34 +136,33 @@ function PubMaticHtb(configs) {
         return retArr;
     }
 
-	function _parseSlotParam (paramName, paramValue) {
-      if (!Utilities.isString(paramValue)) {
-        paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
-        return undefined;
-      }
+    function _parseSlotParam(paramName, paramValue) {
+        if (!Utilities.isString(paramValue)) {
+            paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
+            return undefined;
+        }
 
-      switch (paramName) {
-        case 'pmzoneid':
-          return paramValue.split(',')
+        switch (paramName) {
+            case 'pmzoneid':
+                return paramValue.split(',')
                     .slice(0, 50)
-                    .map(function(id) {
-                      return id.trim()
+                    .map(function (id) {
+                        return id.trim()
                     })
                     .join();
-        case 'kadfloor':
-        case 'lat':
-        case 'lon':
-          return parseFloat(paramValue) || undefined;
-        case 'yob':
-          return parseInt(paramValue) || undefined;
-        default:
-          return paramValue;
-      }
+            case 'kadfloor':
+            case 'lat':
+            case 'lon':
+                return parseFloat(paramValue) || undefined;
+            case 'yob':
+                return parseInt(paramValue) || undefined;
+            default:
+                return paramValue;
+        }
     }
 
     function __populateSiteObject(publisherId) {
-        var retObj =
-        {
+        var retObj = {
             page: Browser.topWindow.location.href,
             ref: Browser.topWindow.document.referrer,
             publisher: {
@@ -142,11 +174,11 @@ function PubMaticHtb(configs) {
         return retObj;
     }
 
-    function __populateDeviceInfo(rp){
+    function __populateDeviceInfo(rp) {
         var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' ||
-                    Browser.topWindow.navigator.doNotTrack == '1' ||
-                    Browser.topWindow.navigator.msDoNotTrack == '1')
-                    ? 1 : 0;
+                Browser.topWindow.navigator.doNotTrack == '1' ||
+                Browser.topWindow.navigator.msDoNotTrack == '1') ?
+            1 : 0;
         return {
             ua: Browser.getUserAgent(),
             js: 1,
@@ -162,13 +194,16 @@ function PubMaticHtb(configs) {
     }
 
     function __populateUserInfo(rp) {
+        let eids = [];
+        __handleDigitrustId(eids);
         return {
             gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
                 lon: _parseSlotParam('lon', __globalConfigs.lon),
             },
-            yob: _parseSlotParam('yob', __globalConfigs.yob)
+            yob: _parseSlotParam('yob', __globalConfigs.yob),
+            eids: eids
         };
     }
 
@@ -180,11 +215,11 @@ function PubMaticHtb(configs) {
         ext.wrapper.wiid = __globalConfigs.wiid || undefined; //
         //ext.wrapper.wv = Constants.REPO_AND_VERSION;
         ext.wrapper.transactionId = __globalConfigs.transactionId;
-        ext.wrapper.wp = 'pbjs' ;
+        ext.wrapper.wp = 'pbjs';
 
         return ext;
     }
-	/**
+    /**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
      *
@@ -253,8 +288,8 @@ function PubMaticHtb(configs) {
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
         var payload = {},
-        callbackId = System.generateUniqueId(),
-        baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
+            callbackId = System.generateUniqueId(),
+            baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
         payload = {
             id: '' + new Date().getTime(), // str | mandatory
             at: 1, // int | mandatory
@@ -300,8 +335,8 @@ function PubMaticHtb(configs) {
             data: payload,
             callbackId: callbackId,
             networkParamOverrides: {
-              method: 'POST',
-              contentType: 'text/plain'
+                method: 'POST',
+                contentType: 'text/plain'
             }
         };
     }
@@ -331,14 +366,14 @@ function PubMaticHtb(configs) {
      * STEP 5  | Rendering Pixel
      * -----------------------------------------------------------------------------
      *
-    */
+     */
 
-     /**
+    /**
      * This function will render the pixel given.
      * @param  {string} pixelUrl Tracking pixel img url.
      */
     function __renderPixel(pixelUrl) {
-        if (pixelUrl){
+        if (pixelUrl) {
             Network.img({
                 url: decodeURIComponent(pixelUrl),
                 method: 'GET',
@@ -383,12 +418,12 @@ function PubMaticHtb(configs) {
         /* ---------- Process adResponse and extract the bids into the bids array ------------*/
 
         var bids = [];
-        if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid)
-          && adResponse.seatbid.length > 0) {
+        if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid) &&
+            adResponse.seatbid.length > 0) {
             for (var i = 0; i < adResponse.seatbid.length; i++) {
-              bids = bids.concat(adResponse.seatbid[i].bid);
+                bids = bids.concat(adResponse.seatbid[i].bid);
             }
-          }
+        }
 
         /* --------------------------------------------------------------------------------- */
 
@@ -404,9 +439,9 @@ function PubMaticHtb(configs) {
             var curBid;
             var sizes;
 
-            if(!bids
-              || !Utilities.isArray(bids)
-              || bids.length === 0
+            if (!bids ||
+                !Utilities.isArray(bids) ||
+                bids.length === 0
             ) {
                 if (__profile.enabledAnalytics.requestTime) {
                     __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
@@ -462,9 +497,9 @@ function PubMaticHtb(configs) {
             var bidIsPass = bidPrice <= 0 ? true : false;
 
             /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
-            * If firing a tracking pixel is not required or the pixel url is part of the adm,
-            * leave empty;
-            */
+             * If firing a tracking pixel is not required or the pixel url is part of the adm,
+             * leave empty;
+             */
             var pixelUrl = '';
             /* ---------------------------------------------------------------------------------------*/
 

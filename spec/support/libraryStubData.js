@@ -169,6 +169,15 @@ var libraryStubData = {
     },
     'pub-matic-htb-validator.js': function () {
         return null;
+    },
+    'digitrust.js':function(){
+        initialize:function(){
+            return {
+                member: "testmember1",
+                site: "testsite",
+                redirects: true
+              }
+        }
     }
 };
 module.exports = libraryStubData;
