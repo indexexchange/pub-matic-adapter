@@ -83,6 +83,7 @@ describe('generateRequestObj', function () {
     expect = require('chai').expect,
     browser = libraryStubData['browser.js'],
     complianceService = libraryStubData['space-camp.js'],
+    digitrust = libraryStubData['digitrust.js'],
     /* -------------------------------------------------------------------- */
 
     /* Instantiate your partner module */
@@ -247,6 +248,55 @@ describe('generateRequestObj', function () {
                 expect(noMatch).to.equal(false);
             });
         });
+
+        it('Request should have digitrust params', function() {
+
+            browser.topWindow.DigiTrust = { 
+              getUser: function (key) {
+                  return {
+                    success: true,
+                    identity: {
+                      privacy: {optout: false},
+                      id: 'testId',
+                      keyv: 4
+                  }
+              }
+            }}
+            
+            requestObject = partnerModule.generateRequestObj(returnParcels);
+            var payload = requestObject.data;
+            expect(payload.user.eids).to.deep.equal([{
+              'source': 'digitru.st',
+              'uids': [{
+                'id': 'testId',
+                'atype': 1,
+                'ext': {
+                     'keyv': 4
+                }
+              }]
+            }]);
+            delete browser.topWindow.DigiTrust;
+          });
+
+          it('Request should not have digitrust params when user has optout', function() {
+
+            browser.topWindow.DigiTrust = { 
+              getUser: function () {
+                  return {
+                    success: true,
+                    identity: {
+                      privacy: {optout: true},
+                      id: 'testId',
+                      keyv: 4
+                  }
+              }
+            }}
+            
+            requestObject = partnerModule.generateRequestObj(returnParcels);
+            var payload = requestObject.data;
+            expect(payload.user.eids).to.deep.equal(undefined);
+            delete browser.topWindow.DigiTrust;
+          });
         /* -----------------------------------------------------------------------*/
 
     /* ---------- IF MRA, generate a single request for each parcel ---------- */

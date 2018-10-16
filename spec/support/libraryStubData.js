@@ -114,17 +114,17 @@ var libraryStubData = {
             },
             ComplianceService: {
                 gdpr: {
-                    getConsent: function() {
+                    getConsent: function () {
                         return {
                             applies: false,
                             consentString: "BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA"
                         }
                     }
                 },
-                isPrivacyEnabled: function() {
-                        //if true, publisher has enabled gdpr, so rely on the values sent by getConsent
-                        //if false, publisher has not enabled gdpr, so do not pass the consent values.
-                        return true;
+                isPrivacyEnabled: function () {
+                    //if true, publisher has enabled gdpr, so rely on the values sent by getConsent
+                    //if false, publisher has not enabled gdpr, so do not pass the consent values.
+                    return true;
                 }
             }
         },
@@ -142,9 +142,9 @@ var libraryStubData = {
     },
     'utilities.js': {
         isA: function (object, _t) {
-          return toString.call(object) === '[object ' + _t + ']';
+            return toString.call(object) === '[object ' + _t + ']';
         },
-        isString: function(object) {
+        isString: function (object) {
             return this.isA(object, "String");
         },
         isArray: function (object) {
@@ -170,13 +170,13 @@ var libraryStubData = {
     'pub-matic-htb-validator.js': function () {
         return null;
     },
-    'digitrust.js':function(){
-        initialize:function(){
+    'digitrust.js': {
+        initialize: function () {
             return {
                 member: "testmember1",
                 site: "testsite",
                 redirects: true
-              }
+            }
         }
     }
 };

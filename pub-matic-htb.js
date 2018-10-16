@@ -68,6 +68,8 @@ function PubMaticHtb(configs) {
     var __profile;
     var __globalConfigs;
 
+    const PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
+
     /* =====================================
      * Functions
      * ---------------------------------- */
@@ -75,12 +77,15 @@ function PubMaticHtb(configs) {
     /* Utilities
      * ---------------------------------- */
 
-    funciton __getDigiTrustId(key){
+    function __getDigiTrustId(key){
         function getDigiTrustId(key) {
-            let digiTrustUser = window.DigiTrust && (config.getConfig('digiTrustId') || window.DigiTrust.getUser({
-                member: key
-            }));
-            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) || null;
+            let digiTrustUser;
+            if(Browser.topWindow.DigiTrust) {
+                digiTrustUser=Browser.topWindow.DigiTrust.getUser({
+                    member: key
+                });
+            }
+            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) ? digiTrustUser.identity : null;
         }
         let digiTrustId = getDigiTrustId(key);
         // Verify there is an ID and this user has not opted out
@@ -92,7 +97,8 @@ function PubMaticHtb(configs) {
 
     function __handleDigitrustId(eids) {
         let digiTrustId = __getDigiTrustId(PUBMATIC_DIGITRUST_KEY);
-        if (digiTrustId !== null) {
+        if (digiTrustId && digiTrustId !== null) {
+            eids =[];
             eids.push({
                 'source': 'digitru.st',
                 'uids': [{
@@ -104,6 +110,7 @@ function PubMaticHtb(configs) {
                 }]
             });
         }
+        return eids;
     }
 
 
@@ -194,8 +201,8 @@ function PubMaticHtb(configs) {
     }
 
     function __populateUserInfo(rp) {
-        let eids = [];
-        __handleDigitrustId(eids);
+        let eids;
+        eids = __handleDigitrustId(eids);
         return {
             gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
