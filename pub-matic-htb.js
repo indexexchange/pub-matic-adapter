@@ -77,7 +77,7 @@ function PubMaticHtb(configs) {
     /* Utilities
      * ---------------------------------- */
 
-    function __getDigiTrustId(key){
+    function __getDigiTrustObject(key){
         function getDigiTrustId(key) {
             let digiTrustUser;
             if(Browser.topWindow.DigiTrust) {
@@ -96,9 +96,8 @@ function PubMaticHtb(configs) {
     }
 
     function __handleDigitrustId(eids) {
-        let digiTrustId = __getDigiTrustId(PUBMATIC_DIGITRUST_KEY);
+        let digiTrustId = __getDigiTrustObject(PUBMATIC_DIGITRUST_KEY);
         if (digiTrustId && digiTrustId !== null) {
-            eids =[];
             eids.push({
                 'source': 'digitru.st',
                 'uids': [{
@@ -113,6 +112,13 @@ function PubMaticHtb(configs) {
         return eids;
     }
 
+    function __handleEids(userObj) {
+        let eids = [];
+        eids = __handleDigitrustId(eids);
+        if (eids.length > 0) {
+            userObj.eids = eids;
+        }
+    }    
 
     function __populateImprObject(returnParcels) {
         var retArr = [],
@@ -201,17 +207,18 @@ function PubMaticHtb(configs) {
     }
 
     function __populateUserInfo(rp) {
-        let eids;
-        eids = __handleDigitrustId(eids);
-        return {
+
+        
+        var userInfoObj =  {
             gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
                 lon: _parseSlotParam('lon', __globalConfigs.lon),
             },
             yob: _parseSlotParam('yob', __globalConfigs.yob),
-            eids: eids
         };
+        __handleEids(userInfoObj);
+        return userInfoObj;
     }
 
     function __populateExtObject(rp) {

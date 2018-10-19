@@ -297,6 +297,33 @@ describe('generateRequestObj', function () {
             expect(payload.user.eids).to.deep.equal(undefined);
             delete browser.topWindow.DigiTrust;
           });
+
+
+          it('Request should not have digitrust params due to failure', function() {
+
+            browser.topWindow.DigiTrust = { 
+              getUser: function () {
+                  return {
+                    success: false,
+                    identity: {
+                      privacy: {optout: true},
+                      id: 'testId',
+                      keyv: 4
+                  }
+              }
+            }}
+            
+            requestObject = partnerModule.generateRequestObj(returnParcels);
+            var payload = requestObject.data;
+            expect(payload.user.eids).to.deep.equal(undefined);
+            delete browser.topWindow.DigiTrust;
+          });
+
+          it('Request should not have digitrust params when DigiTrust not loaded', function() {
+            requestObject = partnerModule.generateRequestObj(returnParcels);
+            var payload = requestObject.data;
+            expect(payload.user.eids).to.deep.equal(undefined);
+          });
         /* -----------------------------------------------------------------------*/
 
     /* ---------- IF MRA, generate a single request for each parcel ---------- */
