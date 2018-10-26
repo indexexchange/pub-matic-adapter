@@ -103,8 +103,6 @@ function PubMaticHtb(configs) {
                     } else {
                         impObj.banner.format.push({w: size[0], h: size[1]});
                     }
-                } else {
-                    console.log("Ignoring invalid size param " + size);
                 }
             });
             if (impObj.banner.format.length === 0) {
