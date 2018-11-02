@@ -50,7 +50,7 @@ describe('Partner Profile', function () {
             properties: {
                 partnerId: {
                     type: 'string',
-                    eq: "PubMaticHtb"
+                    eq: "PubmaticHtb"
                 },
                 namespace: {
                     type: 'string',
@@ -62,7 +62,7 @@ describe('Partner Profile', function () {
                 },
                 version: {
                     type: 'string',
-                    eq: '2.1.0'
+                    eq: '2.1.2'
                 },
                 targetingType: {
                     type: 'string',

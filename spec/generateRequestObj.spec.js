@@ -247,6 +247,21 @@ describe('generateRequestObj', function () {
                 expect(noMatch).to.equal(false);
             });
         });
+
+        it('request object should contain identity data (ttd) if present in return parcels', function() {
+            requestObject = partnerModule.generateRequestObj(returnParcels);
+            var payload = requestObject.data;
+
+            if (returnParcels[0].hasOwnProperty("identityData")) {
+                var idData = returnParcels[0].identityData;
+                expect(payload.user.eids).to.exist;
+                expect(payload.user.eids.source).to.equal(idData["AdserverOrgIp"]["data"].source)
+                expect(payload.user.eids.uids).to.be.an('array').of.length(idData["AdserverOrgIp"]["data"].uids.length);
+            } else {
+                var idData = returnParcels[0].identityData;
+                expect(idData).to.be.undefined;
+            }
+        });
         /* -----------------------------------------------------------------------*/
 
     /* ---------- IF MRA, generate a single request for each parcel ---------- */

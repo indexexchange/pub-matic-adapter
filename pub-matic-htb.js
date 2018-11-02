@@ -161,8 +161,8 @@ function PubMaticHtb(configs) {
         }
     }
 
-    function __populateUserInfo(rp) {
-        return {
+    function __populateUserInfo(rp, idData) {
+        var userObj = {
             gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
@@ -170,6 +170,11 @@ function PubMaticHtb(configs) {
             },
             yob: _parseSlotParam('yob', __globalConfigs.yob)
         };
+
+        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData['AdserverOrgIp'].hasOwnProperty('data')) {
+            userObj.eids = idData['AdserverOrgIp']['data'];
+        }
+        return userObj;
     }
 
     function __populateExtObject(rp) {
@@ -251,6 +256,37 @@ function PubMaticHtb(configs) {
          * }
          */
 
+         /*
+            DUMMY code added to simulate TTD data - to be removed before merging
+         */
+
+        /*for(var ii=0; ii<returnParcels.length;ii++) {
+            returnParcels[ii].identityData = {
+                "AdserverOrgIp": {
+                    "data": {
+                        "source": "adserver.org",
+                        "uids": [{
+                            "id": "uid123",
+                            "ext": {
+                                "rtiPartner": "TDID"
+                            }
+                        }, {
+                            "id": "TRUE",
+                            "ext": {
+                                "rtiPartner": "TDID_LOOKUP"
+                            }
+                        }, {
+                            "id": "2018-08-06T18:55:26",
+                            "ext": {
+                                "rtiPartner": "TDID_CREATED_AT"
+                            }
+                        }]
+                    }
+                }
+            }
+        }*/
+        var idData = returnParcels[0] && returnParcels[0].identityData;
+
         /* ---------------------- PUT CODE HERE ------------------------------------ */
         var payload = {},
         callbackId = System.generateUniqueId(),
@@ -262,7 +298,7 @@ function PubMaticHtb(configs) {
             imp: __populateImprObject(returnParcels), // obj | mandatory - pending
             site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
             device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
-            user: __populateUserInfo(returnParcels[0]), // obj | opt
+            user: __populateUserInfo(returnParcels[0], idData), // obj | opt
             ext: __populateExtObject(returnParcels[0]) // not required?? - to be checked
         }
 
@@ -554,7 +590,7 @@ function PubMaticHtb(configs) {
             partnerId: 'PubmaticHtb', // PartnerName
             namespace: 'PubmaticHtb', // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.1.1',
+            version: '2.1.2',
             targetingType: 'slot',
             enabledAnalytics: {
                 requestTime: !0
