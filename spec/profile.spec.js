@@ -62,7 +62,7 @@ describe('Partner Profile', function () {
                 },
                 version: {
                     type: 'string',
-                    eq: '2.1.1'
+                    eq: '2.1.2'
                 },
                 targetingType: {
                     type: 'string',
