@@ -256,35 +256,6 @@ function PubMaticHtb(configs) {
          * }
          */
 
-         /*
-            DUMMY code added to simulate TTD data - to be removed before merging
-         */
-
-        /*for(var ii=0; ii<returnParcels.length;ii++) {
-            returnParcels[ii].identityData = {
-                "AdserverOrgIp": {
-                    "data": {
-                        "source": "adserver.org",
-                        "uids": [{
-                            "id": "uid123",
-                            "ext": {
-                                "rtiPartner": "TDID"
-                            }
-                        }, {
-                            "id": "TRUE",
-                            "ext": {
-                                "rtiPartner": "TDID_LOOKUP"
-                            }
-                        }, {
-                            "id": "2018-08-06T18:55:26",
-                            "ext": {
-                                "rtiPartner": "TDID_CREATED_AT"
-                            }
-                        }]
-                    }
-                }
-            }
-        }*/
         var idData = returnParcels[0] && returnParcels[0].identityData;
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
