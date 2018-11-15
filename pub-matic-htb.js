@@ -68,12 +68,55 @@ function PubMaticHtb(configs) {
     var __profile;
     var __globalConfigs;
 
+    const PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
+
     /* =====================================
      * Functions
      * ---------------------------------- */
 
     /* Utilities
      * ---------------------------------- */
+    function __getDigiTrustObject(key){
+        function getDigiTrustId(key) {
+            let digiTrustUser;
+            if(Browser.topWindow.DigiTrust) {
+                digiTrustUser=Browser.topWindow.DigiTrust.getUser({
+                    member: key
+                });
+            }
+            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) ? digiTrustUser.identity : null;
+        }
+        let digiTrustId = getDigiTrustId(key);
+        // Verify there is an ID and this user has not opted out
+        if (!digiTrustId || (digiTrustId.privacy && digiTrustId.privacy.optout)) {
+            return null;
+        }
+        return digiTrustId;
+    }
+    function __handleDigitrustId(eids) {
+        let digiTrustId = __getDigiTrustObject(PUBMATIC_DIGITRUST_KEY);
+        if (digiTrustId && digiTrustId !== null) {
+            eids.push({
+                'source': 'digitru.st',
+                'uids': [{
+                    'id': digiTrustId.id || '',
+                    'atype': 1,
+                    'ext': {
+                        'keyv': digiTrustId.keyv || ''
+                    }
+                }]
+            });
+        }
+        return eids;
+    }
+    function __handleEids(userObj) {
+        let eids = [];
+        eids = __handleDigitrustId(eids);
+        if (eids.length > 0) {
+            userObj.eids = eids;
+        }
+    }    
+
      function __populateImprObject(returnParcels) {
         var retArr = [],
             impObj = {},
@@ -173,6 +216,9 @@ function PubMaticHtb(configs) {
 
         if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData['AdserverOrgIp'].hasOwnProperty('data')) {
             userObj.eids = idData['AdserverOrgIp']['data'];
+        }
+        else{
+            __handleEids(userObj);
         }
         return userObj;
     }
