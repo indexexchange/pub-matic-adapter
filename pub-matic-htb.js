@@ -113,7 +113,7 @@ function PubMaticHtb(configs) {
         let eids = [];
         eids = __handleDigitrustId(eids);
         if (eids.length > 0) {
-            userObj.eids = eids;
+            userObj.hasOwnProperty("eids") ? userObj.eids.push(eids) : userObj.eids = eids;
         }
     }    
 
@@ -217,9 +217,8 @@ function PubMaticHtb(configs) {
         if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData['AdserverOrgIp'].hasOwnProperty('data')) {
             userObj.eids = idData['AdserverOrgIp']['data'];
         }
-        else{
-            __handleEids(userObj);
-        }
+
+        __handleEids(userObj);
         return userObj;
     }
 
