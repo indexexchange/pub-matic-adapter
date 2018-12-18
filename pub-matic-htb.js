@@ -77,9 +77,11 @@ function PubMaticHtb(configs) {
      function __populateImprObject(returnParcels) {
         var retArr = [],
             impObj = {},
-            sizes = [];
+            sizes = [],
+            sizeIndex = 0;
 
         returnParcels.forEach(function(rp) {
+            sizeIndex = 0;
             impObj = {
                 id:  rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
@@ -89,14 +91,22 @@ function PubMaticHtb(configs) {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
                 }
             }
-            sizes = rp.xSlotRef.sizes[0];
-            if (sizes.length > 0) {
-                impObj.banner = {
-                    w: sizes[0],
-                    h: sizes[1]
+            sizes = rp.xSlotRef.sizes;
+            impObj.banner = {};
+            impObj.banner.format = [];
+            sizes.forEach(function(size) {
+                if (size.length === 2) {
+                    if (sizeIndex === 0) {
+                        impObj.banner.w = size[0];
+                        impObj.banner.h = size[1];
+                        sizeIndex++;
+                    } else {
+                        impObj.banner.format.push({w: size[0], h: size[1]});
+                    }
                 }
-            } else {
-                console.log("PubMatic: Error in sizes array");
+            });
+            if (impObj.banner.format.length === 0) {
+                delete impObj.banner.format;
             }
             retArr.push(impObj);
         });
@@ -193,7 +203,6 @@ function PubMaticHtb(configs) {
      * @return {object}
      */
     function __generateRequestObj(returnParcels) {
-
         /* =============================================================================
          * STEP 2  | Generate Request URL
          * -----------------------------------------------------------------------------
@@ -554,7 +563,7 @@ function PubMaticHtb(configs) {
             partnerId: 'PubmaticHtb', // PartnerName
             namespace: 'PubmaticHtb', // Should be same as partnerName
             statsId: 'PUBM', // Unique partner identifier
-            version: '2.1.1',
+            version: '2.1.2',
             targetingType: 'slot',
             enabledAnalytics: {
                 requestTime: !0
