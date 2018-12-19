@@ -68,12 +68,55 @@ function PubMaticHtb(configs) {
     var __profile;
     var __globalConfigs;
 
+    const PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
+
     /* =====================================
      * Functions
      * ---------------------------------- */
 
     /* Utilities
      * ---------------------------------- */
+    function __getDigiTrustObject(key){
+        function getDigiTrustId(key) {
+            let digiTrustUser;
+            if(Browser.topWindow.DigiTrust) {
+                digiTrustUser=Browser.topWindow.DigiTrust.getUser({
+                    member: key
+                });
+            }
+            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) ? digiTrustUser.identity : null;
+        }
+        let digiTrustId = getDigiTrustId(key);
+        // Verify there is an ID and this user has not opted out
+        if (!digiTrustId || (digiTrustId.privacy && digiTrustId.privacy.optout)) {
+            return null;
+        }
+        return digiTrustId;
+    }
+    function __handleDigitrustId(eids) {
+        let digiTrustId = __getDigiTrustObject(PUBMATIC_DIGITRUST_KEY);
+        if (digiTrustId && digiTrustId !== null) {
+            eids.push({
+                'source': 'digitru.st',
+                'uids': [{
+                    'id': digiTrustId.id || '',
+                    'atype': 1,
+                    'ext': {
+                        'keyv': digiTrustId.keyv || ''
+                    }
+                }]
+            });
+        }
+        return eids;
+    }
+    function __handleEids(userObj) {
+        let eids = [];
+        eids = __handleDigitrustId(eids);
+        if (eids.length > 0) {
+            userObj.hasOwnProperty("eids") ? userObj.eids.push(eids) : userObj.eids = eids;
+        }
+    }
+
      function __populateImprObject(returnParcels) {
         var retArr = [],
             impObj = {},
@@ -171,8 +214,8 @@ function PubMaticHtb(configs) {
         }
     }
 
-    function __populateUserInfo(rp) {
-        return {
+    function __populateUserInfo(rp, idData) {
+        var userObj = {
             gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
@@ -180,6 +223,13 @@ function PubMaticHtb(configs) {
             },
             yob: _parseSlotParam('yob', __globalConfigs.yob)
         };
+
+        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData['AdserverOrgIp'].hasOwnProperty('data')) {
+            userObj.eids = idData['AdserverOrgIp']['data'];
+        }
+
+        __handleEids(userObj);
+        return userObj;
     }
 
     function __populateExtObject(rp) {
@@ -203,6 +253,7 @@ function PubMaticHtb(configs) {
      * @return {object}
      */
     function __generateRequestObj(returnParcels) {
+
         /* =============================================================================
          * STEP 2  | Generate Request URL
          * -----------------------------------------------------------------------------
@@ -260,6 +311,8 @@ function PubMaticHtb(configs) {
          * }
          */
 
+        var idData = returnParcels[0] && returnParcels[0].identityData;
+
         /* ---------------------- PUT CODE HERE ------------------------------------ */
         var payload = {},
         callbackId = System.generateUniqueId(),
@@ -271,7 +324,7 @@ function PubMaticHtb(configs) {
             imp: __populateImprObject(returnParcels), // obj | mandatory - pending
             site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
             device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
-            user: __populateUserInfo(returnParcels[0]), // obj | opt
+            user: __populateUserInfo(returnParcels[0], idData), // obj | opt
             ext: __populateExtObject(returnParcels[0]) // not required?? - to be checked
         }
 
