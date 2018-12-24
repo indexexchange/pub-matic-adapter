@@ -73,16 +73,33 @@ function validateBidRequest(request) {
         expect(body.imp[1].bidFloor).toEqual(parseFloat(config.kadfloor));
         expect(body.imp[1].tagId).toEqual(config.xSlots["2"].adUnitName);
 
-        expect(body.ext.wrapper.wp).toEqual('pbjs');
         expect(body.at).toEqual(1);
         expect(body.cur[0]).toEqual('USD');
+        expect(body.site.publisher).toBeDefined();
+        expect(body.site.publisher.domain).toBeDefined();
+
         expect(body.site.publisher.id).toEqual(config.publisherId);
-        expect(body.device.geo.lat).toEqual(parseFloat(config.lat));
-        expect(body.device.geo.lon).toEqual(parseFloat(config.lon));
+        expect(body.user).toBeDefined();
+        expect(body.user.geo).toBeDefined();
         expect(body.user.geo.lat).toEqual(parseFloat(config.lat));
         expect(body.user.geo.lon).toEqual(parseFloat(config.lon));
         expect(body.user.gender).toEqual(config.gender);
         expect(body.user.yob).toEqual(parseInt(config.yob));
+        expect(body.device).toBeDefined();
+        expect(body.device.ua).toBeDefined()
+        expect(body.device.js).toBeDefined();
+        expect(body.device.js).toEqual(1);
+        expect(body.device.dnt).toBeDefined();
+        expect(body.device.h).toBeDefined();
+        expect(body.device.w).toBeDefined();
+        expect(body.device.language).toBeDefined();
+        expect(body.device.geo).toBeDefined();
+        expect(body.device.geo.lat).toEqual(parseFloat(config.lat));
+        expect(body.device.geo.lon).toEqual(parseFloat(config.lon));
+
+         expect(body.ext).toBeDefined();
+         expect(body.ext.wrapper).toBeDefined();
+         expect(body.ext.wrapper.wp).toEqual('pbjs');
     }
 }
 
