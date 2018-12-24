@@ -228,7 +228,7 @@ function PubMaticHtb(configs) {
             userObj.eids = idData['AdserverOrgIp']['data'];
         }
 
-        __handleEids(userObj);
+        //__handleEids(userObj);
         return userObj;
     }
 
