@@ -64,8 +64,21 @@ function getValidResponse(request, creative) {
             seat: "12345",
             bid: [{
                 "id": "4E733404-CC2E-48A2-BC83-4DD5F38FE9BB",
-                "impid": "_4r5yag141",
-                "price": 2.676619,
+                "impid": body.imp[0].id,
+                "price": 2,
+                "adm": creative,
+                "adomain": ["mystartab.com"],
+                "cid": "16981",
+                "h": 250,
+                "w": 300,
+                "ext": {
+                    "dspid": 6
+                }
+            },
+            {
+                "id": "4E733404-CC2E-48A2-BC83-4DD5F38FE9BC",
+                "impid": body.imp[1].id,
+                "price": 2,
                 "adm": creative,
                 "adomain": ["mystartab.com"],
                 "cid": "16981",
@@ -84,7 +97,6 @@ function validateTargeting(targetingMap) {
     var isObjEmpty = Object.keys(targetingMap).length === 0 && targetingMap.constructor === Object;
         if (!isObjEmpty) {
         expect(targetingMap).toEqual(jasmine.objectContaining({
-            ix_pubm_dealid: ["300x250_PUBDEAL1", "728x90_PUBDEAL1"],
             ix_pubm_om: jasmine.arrayContaining([jasmine.any(String), jasmine.any(String)]),
             ix_pubm_id: jasmine.arrayContaining([jasmine.any(String), jasmine.any(String)])
         }));
