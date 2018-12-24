@@ -28,7 +28,7 @@ function getConfig() {
         xSlots: {
             "1": {
                 "adUnitName": "/43743431/DMDemo",
-                "sizes": [ [300, 250] ]
+                "sizes": [ [300, 250], [160, 600] ]
             },
             "2": {
                 "adUnitName": "/43743431/DMDemo1",
@@ -48,10 +48,41 @@ function getBidRequestRegex() {
 function validateBidRequest(request) {
     expect(request.query.source).toEqual("index-client");
     expect(request.host).toEqual("hbopenbid.pubmatic.com");
+    var config = this.getConfig();
+    var sizes1 = config.xSlots["1"].sizes;
+    var sizes2 = config.xSlots["2"].sizes;
+
     var body = request.body;
     if (body !== undefined) {
         body = JSON.parse(body);
         expect(body.id).toBeDefined();
+        expect(body.imp.length).toEqual(2);
+        expect(body.imp[0].banner.format).toBeDefined();
+
+        expect(body.imp[0].banner.format.length).toEqual(sizes1.length-1);
+        expect(body.imp[0].banner.w).toEqual(sizes1[0][0]);
+        expect(body.imp[0].banner.h).toEqual(sizes1[0][1]);
+        expect(body.imp[0].banner.format[0].w).toEqual(sizes1[1][0]);
+        expect(body.imp[0].banner.format[0].h).toEqual(sizes1[1][1]);
+        expect(body.imp[0].bidFloor).toEqual(parseFloat(config.kadfloor));
+        expect(body.imp[0].tagId).toEqual(config.xSlots["1"].adUnitName);
+
+        expect(body.imp[1].banner.format).toBeUndefined();
+        expect(body.imp[1].banner.w).toEqual(sizes2[0][0]);
+        expect(body.imp[1].banner.h).toEqual(sizes2[0][1]);
+        expect(body.imp[1].bidFloor).toEqual(parseFloat(config.kadfloor));
+        expect(body.imp[1].tagId).toEqual(config.xSlots["2"].adUnitName);
+
+        expect(body.ext.wrapper.wp).toEqual('pbjs');
+        expect(body.at).toEqual(1);
+        expect(body.cur[0]).toEqual('USD');
+        expect(body.site.publisher.id).toEqual(config.publisherId);
+        expect(body.device.geo.lat).toEqual(parseFloat(config.lat));
+        expect(body.device.geo.lon).toEqual(parseFloat(config.lon));
+        expect(body.user.geo.lat).toEqual(parseFloat(config.lat));
+        expect(body.user.geo.lon).toEqual(parseFloat(config.lon));
+        expect(body.user.gender).toEqual(config.gender);
+        expect(body.user.yob).toEqual(parseInt(config.yob));
     }
 }
 
