@@ -25,8 +25,8 @@ var SpaceCamp = require('space-camp.js');
 var System = require('system.js');
 var Network = require('network.js');
 var Utilities = require('utilities.js');
+
 var ComplianceService;
-var EventsService;
 var RenderService;
 
 //? if (DEBUG) {
@@ -35,6 +35,8 @@ var PartnerSpecificValidator = require('pub-matic-htb-validator.js');
 var Scribe = require('scribe.js');
 var Whoopsie = require('whoopsie.js');
 //? }
+
+var undef;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Main ////////////////////////////////////////////////////////////////////////
@@ -68,83 +70,74 @@ function PubMaticHtb(configs) {
     var __profile;
     var __globalConfigs;
 
-    const PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
-
     /* =====================================
      * Functions
      * ---------------------------------- */
 
     /* Utilities
      * ---------------------------------- */
-    function __getDigiTrustObject(key){
-        function getDigiTrustId(key) {
-            let digiTrustUser;
-            if(Browser.topWindow.DigiTrust) {
-                digiTrustUser=Browser.topWindow.DigiTrust.getUser({
-                    member: key
-                });
+
+    function _parseSlotParam(paramName, paramValue) {
+        if (Utilities.isString(paramValue)) {
+            switch (paramName) {
+                case 'pmzoneid':
+
+                    return paramValue.split(',')
+                        .slice(0, 50)
+                        .map(function (id) {
+                            return id.trim();
+                        })
+                        .join();
+                case 'kadfloor':
+                case 'lat':
+                case 'lon':
+
+                    return parseFloat(paramValue) || undef;
+                case 'yob':
+                    return parseInt(paramValue, 10) || undef;
+
+                default:
+
+                    return paramValue;
             }
-            return (digiTrustUser && digiTrustUser.success && digiTrustUser.identity) ? digiTrustUser.identity : null;
-        }
-        let digiTrustId = getDigiTrustId(key);
-        // Verify there is an ID and this user has not opted out
-        if (!digiTrustId || (digiTrustId.privacy && digiTrustId.privacy.optout)) {
-            return null;
-        }
-        return digiTrustId;
-    }
-    function __handleDigitrustId(eids) {
-        let digiTrustId = __getDigiTrustObject(PUBMATIC_DIGITRUST_KEY);
-        if (digiTrustId && digiTrustId !== null) {
-            eids.push({
-                'source': 'digitru.st',
-                'uids': [{
-                    'id': digiTrustId.id || '',
-                    'atype': 1,
-                    'ext': {
-                        'keyv': digiTrustId.keyv || ''
-                    }
-                }]
-            });
-        }
-        return eids;
-    }
-    function __handleEids(userObj) {
-        let eids = [];
-        eids = __handleDigitrustId(eids);
-        if (eids.length > 0) {
-            userObj.hasOwnProperty("eids") ? userObj.eids.push(eids) : userObj.eids = eids;
+        } else {
+            return undef;
         }
     }
 
-     function __populateImprObject(returnParcels) {
-        var retArr = [],
-            impObj = {},
-            sizes = [],
-            sizeIndex = 0;
+    function __populateImprObject(returnParcels) {
+        var retArr = [];
+        var impObj = {};
+        var sizes = [];
+        var sizeIndex = 0;
 
-        returnParcels.forEach(function(rp) {
+        returnParcels.forEach(function (rp) {
             sizeIndex = 0;
             impObj = {
-                id:  rp.htSlot.getId(),
+                id: rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
-                secure: Browser.getProtocol() === "https:" ? 1 : 0,
+                secure: Browser.getProtocol() === 'https:' ? 1 : 0,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
                 }
-            }
+            };
             sizes = rp.xSlotRef.sizes;
             impObj.banner = {};
             impObj.banner.format = [];
-            sizes.forEach(function(size) {
+            sizes.forEach(function (size) {
                 if (size.length === 2) {
                     if (sizeIndex === 0) {
                         impObj.banner.w = size[0];
                         impObj.banner.h = size[1];
                         sizeIndex++;
                     } else {
-                        impObj.banner.format.push({w: size[0], h: size[1]});
+                        impObj.banner.format.push(
+                            {
+                                w: size[0],
+                                h: size[1]
+                            }
+                        );
                     }
                 }
             });
@@ -153,53 +146,29 @@ function PubMaticHtb(configs) {
             }
             retArr.push(impObj);
         });
+
         return retArr;
     }
 
-	function _parseSlotParam (paramName, paramValue) {
-      if (!Utilities.isString(paramValue)) {
-        paramValue && console.log('PubMatic: Ignoring param key: ' + paramName + ', expects string-value, found ' + typeof paramValue);
-        return undefined;
-      }
-
-      switch (paramName) {
-        case 'pmzoneid':
-          return paramValue.split(',')
-                    .slice(0, 50)
-                    .map(function(id) {
-                      return id.trim()
-                    })
-                    .join();
-        case 'kadfloor':
-        case 'lat':
-        case 'lon':
-          return parseFloat(paramValue) || undefined;
-        case 'yob':
-          return parseInt(paramValue) || undefined;
-        default:
-          return paramValue;
-      }
-    }
-
     function __populateSiteObject(publisherId) {
-        var retObj =
-        {
+        var retObj = {
             page: Browser.topWindow.location.href,
             ref: Browser.topWindow.document.referrer,
             publisher: {
-                id: publisherId, // mandatory
+                id: publisherId,
                 domain: Browser.topWindow.location.hostname
             },
             domain: Browser.topWindow.location.hostname
-        }
+        };
+
         return retObj;
     }
 
-    function __populateDeviceInfo(rp){
-        var dnt = (Browser.topWindow.navigator.doNotTrack == 'yes' ||
-                    Browser.topWindow.navigator.doNotTrack == '1' ||
-                    Browser.topWindow.navigator.msDoNotTrack == '1')
-                    ? 1 : 0;
+    function __populateDeviceInfo() {
+        var dnt = Browser.topWindow.navigator.doNotTrack === 'yes'
+                    || Browser.topWindow.navigator.doNotTrack === '1'
+                    || Browser.topWindow.navigator.msDoNotTrack === '1' ? 1 : 0;
+
         return {
             ua: Browser.getUserAgent(),
             js: 1,
@@ -209,42 +178,41 @@ function PubMaticHtb(configs) {
             language: Browser.getLanguage(),
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
-                lon: _parseSlotParam('lon', __globalConfigs.lon),
+                lon: _parseSlotParam('lon', __globalConfigs.lon)
             }
-        }
+        };
     }
 
     function __populateUserInfo(rp, idData) {
         var userObj = {
-            gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undefined,
+            gender: __globalConfigs.gender ? __globalConfigs.gender.trim() : undef,
             geo: {
                 lat: _parseSlotParam('lat', __globalConfigs.lat),
-                lon: _parseSlotParam('lon', __globalConfigs.lon),
+                lon: _parseSlotParam('lon', __globalConfigs.lon)
             },
             yob: _parseSlotParam('yob', __globalConfigs.yob)
         };
 
-        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData['AdserverOrgIp'].hasOwnProperty('data')) {
-            userObj.eids = idData['AdserverOrgIp']['data'];
+        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData.AdserverOrgIp.hasOwnProperty('data')) {
+            userObj.eids = idData.AdserverOrgIp.data;
         }
 
-        //__handleEids(userObj);
         return userObj;
     }
 
-    function __populateExtObject(rp) {
+    function __populateExtObject() {
         var ext = {};
         ext.wrapper = {};
-        ext.wrapper.profile = __globalConfigs.profile || undefined; // remove ? check if mandatory
-        ext.wrapper.version = __globalConfigs.version || undefined; // remove ? check if mandatory
-        ext.wrapper.wiid = __globalConfigs.wiid || undefined; //
-        //ext.wrapper.wv = Constants.REPO_AND_VERSION;
+        ext.wrapper.profile = __globalConfigs.profile || undef;
+        ext.wrapper.version = __globalConfigs.version || undef;
+        ext.wrapper.wiid = __globalConfigs.wiid || undef;
         ext.wrapper.transactionId = __globalConfigs.transactionId;
-        ext.wrapper.wp = 'pbjs' ;
+        ext.wrapper.wp = 'pbjs';
 
         return ext;
     }
-	/**
+
+    /**
      * Generates the request URL and query data to the endpoint for the xSlots
      * in the given returnParcels.
      *
@@ -252,8 +220,8 @@ function PubMaticHtb(configs) {
      *
      * @return {object}
      */
-    function __generateRequestObj(returnParcels) {
 
+    function __generateRequestObj(returnParcels) {
         /* =============================================================================
          * STEP 2  | Generate Request URL
          * -----------------------------------------------------------------------------
@@ -314,19 +282,33 @@ function PubMaticHtb(configs) {
         var idData = returnParcels[0] && returnParcels[0].identityData;
 
         /* ---------------------- PUT CODE HERE ------------------------------------ */
-        var payload = {},
-        callbackId = System.generateUniqueId(),
-        baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
+        var payload = {};
+        var callbackId = System.generateUniqueId();
+        var baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
         payload = {
-            id: '' + new Date().getTime(), // str | mandatory
-            at: 1, // int | mandatory
-            cur: ['USD'], // [str] | opt
-            imp: __populateImprObject(returnParcels), // obj | mandatory - pending
-            site: __populateSiteObject(__globalConfigs.pubId), //// obj | opt
-            device: __populateDeviceInfo(returnParcels[0]), // obj | mandatory
-            user: __populateUserInfo(returnParcels[0], idData), // obj | opt
-            ext: __populateExtObject(returnParcels[0]) // not required?? - to be checked
-        }
+            // Str | mandatory
+            id: String(new Date()
+                .getTime()),
+
+            // Int | mandatory
+            at: 1,
+
+            // [str] | opt
+            cur: ['USD'],
+
+            // Obj | mandatory - pending
+            imp: __populateImprObject(returnParcels),
+
+            // Obj | opt
+            site: __populateSiteObject(__globalConfigs.pubId),
+
+            // Obj | mandatory
+            device: __populateDeviceInfo(),
+
+            // Obj | opt
+            user: __populateUserInfo(returnParcels[0], idData),
+            ext: __populateExtObject()
+        };
 
         /* ------------------------ Get consent information -------------------------
          * If you want to implement GDPR consent in your adapter, use the function
@@ -341,7 +323,7 @@ function PubMaticHtb(configs) {
          * The return object should look something like this:
          * {
          *      applies: true,
-         *      consentString: "BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA"
+         *      consentString: 'BOQ7WlgOQ7WlgABABwAAABJOACgACAAQABA'
          * }
          */
         var isPrivacyEnabled = ComplianceService.isPrivacyEnabled();
@@ -349,21 +331,23 @@ function PubMaticHtb(configs) {
             var gdprStatus = ComplianceService.gdpr.getConsent();
             payload.user.ext = {
                 consent: gdprStatus.consentString
-            }
+            };
             payload.regs = {
                 ext: {
                     gdpr: gdprStatus.applies ? 1 : 0
                 }
-            }
+            };
         }
+
         /* -------------------------------------------------------------------------- */
+
         return {
             url: baseUrl,
             data: payload,
             callbackId: callbackId,
             networkParamOverrides: {
-              method: 'POST',
-              contentType: 'text/plain'
+                method: 'POST',
+                contentType: 'text/plain'
             }
         };
     }
@@ -380,10 +364,11 @@ function PubMaticHtb(configs) {
      * callback type to CallbackTypes.CALLBACK_NAME and omit this function.
      */
     function adResponseCallback(adResponse) {
-        /* get callbackId from adResponse here */
+        /* Get callbackId from adResponse here */
         var callbackId = 0;
         __baseClass._adResponseStore[callbackId] = adResponse;
     }
+
     /* -------------------------------------------------------------------------- */
 
     /* Helpers
@@ -395,15 +380,15 @@ function PubMaticHtb(configs) {
      *
     */
 
-     /**
+    /**
      * This function will render the pixel given.
      * @param  {string} pixelUrl Tracking pixel img url.
      */
     function __renderPixel(pixelUrl) {
-        if (pixelUrl){
+        if (pixelUrl) {
             Network.img({
                 url: decodeURIComponent(pixelUrl),
-                method: 'GET',
+                method: 'GET'
             });
         }
     }
@@ -422,7 +407,6 @@ function PubMaticHtb(configs) {
      * attached to each one of the objects for which the demand was originally requested for.
      */
     function __parseResponse(sessionId, adResponse, returnParcels) {
-
         /* =============================================================================
          * STEP 4  | Parse & store demand response
          * -----------------------------------------------------------------------------
@@ -442,20 +426,19 @@ function PubMaticHtb(configs) {
          *
          */
 
-        /* ---------- Process adResponse and extract the bids into the bids array ------------*/
+        /* ---------- Process adResponse and extract the bids into the bids array ------------ */
 
         var bids = [];
         if (adResponse && adResponse.seatbid && Utilities.isArray(adResponse.seatbid)
           && adResponse.seatbid.length > 0) {
-            for (var i = 0; i < adResponse.seatbid.length; i++) {
-              bids = bids.concat(adResponse.seatbid[i].bid);
+            for (var ii = 0; ii < adResponse.seatbid.length; ii++) {
+                bids = bids.concat(adResponse.seatbid[ii].bid);
             }
-          }
+        }
 
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
-
             var curReturnParcel = returnParcels[j];
 
             var headerStatsInfo = {};
@@ -466,7 +449,7 @@ function PubMaticHtb(configs) {
             var curBid;
             var sizes;
 
-            if(!bids
+            if (!bids
               || !Utilities.isArray(bids)
               || bids.length === 0
             ) {
@@ -474,21 +457,25 @@ function PubMaticHtb(configs) {
                     __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
                 }
                 curReturnParcel.pass = true;
+
                 continue;
             }
 
             for (var i = 0; i < bids.length; i++) {
                 sizes = curReturnParcel.xSlotRef.sizes[0];
+
                 /**
                  * This section maps internal returnParcels and demand returned from the bid request.
                  * In order to match them correctly, they must be matched via some criteria. This
                  * is usually some sort of placements or inventory codes. Please replace the someCriteria
                  * key to a key that represents the placement in the configuration and in the bid responses.
-                 */
+                */
                 if (bids[i].impid === curReturnParcel.htSlot.getId()) {
-                    if (parseInt(bids[i].w) === parseInt(sizes[0]) && parseInt(bids[i].h) === parseInt(sizes[1])) {
+                    if (parseInt(bids[i].w, 10) === parseInt(sizes[0], 10)
+                        && parseInt(bids[i].h, 10) === parseInt(sizes[1], 10)) {
                         curBid = bids[i];
                         bids.splice(i, 1);
+
                         break;
                     }
                 }
@@ -500,35 +487,39 @@ function PubMaticHtb(configs) {
                     __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
                 }
                 curReturnParcel.pass = true;
+
                 continue;
             }
 
-            /* ---------- Fill the bid variables with data from the bid response here. ------------*/
+            /* ---------- Fill the bid variables with data from the bid response here. ------------ */
 
             /* Using the above variable, curBid, extract various information about the bid and assign it to
              * these local variables */
 
-            /* the bid price for the given slot */
+            /* The bid price for the given slot */
             var bidPrice = curBid.price;
 
-            /* the size of the given slot */
+            /* The size of the given slot */
             var bidSize = [Number(curBid.w), Number(curBid.h)];
 
-            /* the creative/adm for the given slot that will be rendered if is the winner.
+            /* The creative/adm for the given slot that will be rendered if is the winner.
              * Please make sure the URL is decoded and ready to be document.written.
              */
             var bidCreative = curBid.adm;
 
-            var bidDealId = curBid.dealid; /* the dealId if applicable for this slot. */
-            /* explicitly pass */
-            var bidIsPass = bidPrice <= 0 ? true : false;
+            /* The dealId if applicable for this slot. */
+            var bidDealId = curBid.dealid;
+
+            /* Explicitly pass */
+            var bidIsPass = bidPrice <= 0;
 
             /* OPTIONAL: tracking pixel url to be fired AFTER rendering a winning creative.
             * If firing a tracking pixel is not required or the pixel url is part of the adm,
             * leave empty;
             */
             var pixelUrl = '';
-            /* ---------------------------------------------------------------------------------------*/
+
+            /* --------------------------------------------------------------------------------------- */
 
             curBid = null;
             if (bidIsPass) {
@@ -539,6 +530,7 @@ function PubMaticHtb(configs) {
                     __baseClass._emitStatsEvent(sessionId, 'hs_slot_pass', headerStatsInfo);
                 }
                 curReturnParcel.pass = true;
+
                 continue;
             }
 
@@ -575,6 +567,7 @@ function PubMaticHtb(configs) {
             //? if (FEATURES.RETURN_PRICE) {
             curReturnParcel.price = Number(__baseClass._bidTransformers.price.apply(bidPrice));
             //? }
+            var demandExpiry = __profile.features.demandExpiry;
 
             var pubKitAdId = RenderService.registerAd({
                 sessionId: sessionId,
@@ -583,8 +576,8 @@ function PubMaticHtb(configs) {
                 requestId: curReturnParcel.requestId,
                 size: curReturnParcel.size,
                 price: targetingCpm,
-                dealId: bidDealId || undefined,
-                timeOfExpiry: __profile.features.demandExpiry.enabled ? (__profile.features.demandExpiry.value + System.now()) : 0,
+                dealId: bidDealId || undef,
+                timeOfExpiry: demandExpiry.enabled ? demandExpiry.value + System.now() : 0,
                 auxFn: __renderPixel,
                 auxArgs: [pixelUrl]
             });
@@ -600,7 +593,6 @@ function PubMaticHtb(configs) {
      * ---------------------------------- */
 
     (function __constructor() {
-        EventsService = SpaceCamp.services.EventsService;
         RenderService = SpaceCamp.services.RenderService;
         ComplianceService = SpaceCamp.services.ComplianceService;
 
@@ -611,11 +603,17 @@ function PubMaticHtb(configs) {
          * Please fill out the below partner profile according to the steps in the README doc.
          */
 
-        /* ---------- Please fill out this partner profile according to your module ------------*/
+        /* ---------- Please fill out this partner profile according to your module ------------ */
         __profile = {
-            partnerId: 'PubmaticHtb', // PartnerName
-            namespace: 'PubmaticHtb', // Should be same as partnerName
-            statsId: 'PUBM', // Unique partner identifier
+
+            // PartnerName
+            partnerId: 'PubmaticHtb',
+
+            // Should be same as partnerName
+            namespace: 'PubmaticHtb',
+
+            // Unique partner identifier
+            statsId: 'PUBM',
             version: '2.1.2',
             targetingType: 'slot',
             enabledAnalytics: {
@@ -631,19 +629,30 @@ function PubMaticHtb(configs) {
                     value: 0
                 }
             },
-            targetingKeys: { // Targeting keys for demand, should follow format ix_{statsId}_id
+
+            // Targeting keys for demand, should follow format ix_{statsId}_id
+            targetingKeys: {
                 id: 'ix_pubm_id',
                 om: 'ix_pubm_om',
                 pm: 'ix_pubm_om',
                 pmid: 'ix_pubm_dealid'
             },
-            bidUnitInCents: 100, // The bid price unit (in cents) the endpoint returns, please refer to the readme for details
+
+            // The bid price unit (in cents) the endpoint returns, please refer to the readme for details
+            bidUnitInCents: 100,
             lineItemType: Constants.LineItemTypes.ID_AND_SIZE,
-            callbackType: Partner.CallbackTypes.NONE, // Callback type, please refer to the readme for details
-            architecture: Partner.Architectures.SRA, // Request architecture, please refer to the readme for details
-            requestType: Partner.RequestTypes.AJAX // Request type, jsonp, ajax, or any.
+
+            // Callback type, please refer to the readme for details
+            callbackType: Partner.CallbackTypes.NONE,
+
+            // Request architecture, please refer to the readme for details
+            architecture: Partner.Architectures.SRA,
+
+            // Request type, jsonp, ajax, or any.
+            requestType: Partner.RequestTypes.AJAX
         };
-        /* ---------------------------------------------------------------------------------------*/
+
+        /* --------------------------------------------------------------------------------------- */
 
         //? if (DEBUG) {
         var results = ConfigValidators.partnerBaseConfig(configs) || PartnerSpecificValidator(configs);
@@ -654,15 +663,16 @@ function PubMaticHtb(configs) {
         //? }
         __globalConfigs = {
             pubId: configs.publisherId,
+
             /* Pubmatic specific values. required in the api request */
-            lat: configs.lat || undefined,
-            lon: configs.lon || undefined,
-            yob: configs.yob || undefined,
-            gender: configs.gender || undefined,
-            kadfloor: configs.kadfloor || undefined,
-            profile: configs.profile || undefined,
-            version: configs.version || undefined
-        }
+            lat: configs.lat || undef,
+            lon: configs.lon || undef,
+            yob: configs.yob || undef,
+            gender: configs.gender || undef,
+            kadfloor: configs.kadfloor || undef,
+            profile: configs.profile || undef,
+            version: configs.version || undef
+        };
         __baseClass = Partner(__profile, configs, null, {
             parseResponse: __parseResponse,
             generateRequestObj: __generateRequestObj,
@@ -699,7 +709,7 @@ function PubMaticHtb(configs) {
         //? if (TEST) {
         parseResponse: __parseResponse,
         generateRequestObj: __generateRequestObj,
-        adResponseCallback: adResponseCallback,
+        adResponseCallback: adResponseCallback
         //? }
     };
 
