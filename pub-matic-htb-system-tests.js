@@ -178,15 +178,32 @@ function validateBidRequestWithPrivacy(request) {
 
 function validateBidRequestWithAdSrvrOrg(request) {
     var body = JSON.parse(request.body);
-    expect(body.user.eids.source).toEqual('adserver.org');
-    expect(body.user.eids.uids).toEqual(jasmine.arrayContaining([
-        {
-            id: 'TEST_ADSRVR_ORG_STRING',
-            ext: {
-                rtiPartner: 'TDID'
-            }
+    var i = 0;
+    for (; i<body.user.eids.length; i++) {
+        switch (body.user.eids[i].source) {
+            case 'digitru.st':
+                var data = body.user.eids[i].uids;
+                expect(data[0]).toEqual(jasmine.objectContaining(
+                    {
+                        id: jasmine.any(String),
+                        atype: jasmine.any(Number),
+                        ext: jasmine.objectContaining({
+                            keyv: jasmine.any(Number)
+                        })
+                    })
+                );
+                break;
+            case 'adserver.org':
+                expect(body.user.eids[i].uids).toEqual(jasmine.arrayContaining([
+                    {
+                        id: 'TEST_ADSRVR_ORG_STRING',
+                        ext: {
+                            rtiPartner: 'TDID'
+                        }
+                    }
+                ]));
         }
-    ]));
+    }
 }
 
 module.exports = {
