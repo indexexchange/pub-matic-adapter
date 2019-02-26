@@ -69,6 +69,7 @@ function PubMaticHtb(configs) {
      */
     var __profile;
     var __globalConfigs;
+    var PUBMATIC_DIGITRUST_KEY = 'nFIn8aLzbd';
 
     /* =====================================
      * Functions
@@ -102,6 +103,65 @@ function PubMaticHtb(configs) {
             }
         } else {
             return undef;
+        }
+    }
+
+    function __getDigiTrustObject(key) {
+        function getDigiTrustId(key1) {
+            var digiTrustUser;
+            if (Browser.topWindow.DigiTrust) {
+                digiTrustUser = Browser.topWindow.DigiTrust.getUser({
+                    member: key1
+                });
+            }
+
+            return digiTrustUser && digiTrustUser.success && digiTrustUser.identity ? digiTrustUser.identity : null;
+        }
+        var digiTrustId = getDigiTrustId(key);
+
+        // Verify there is an ID and this user has not opted out
+        if (!digiTrustId || (digiTrustId.privacy && digiTrustId.privacy.optout)) {
+            return null;
+        }
+
+        return digiTrustId;
+    }
+
+    function __handleDigitrustId(eids) {
+        var digiTrustId = __getDigiTrustObject(PUBMATIC_DIGITRUST_KEY);
+        if (digiTrustId && digiTrustId !== null) {
+            eids.push({
+                source: 'digitru.st',
+                uids: [
+                    {
+                        id: digiTrustId.id || '',
+                        atype: 1,
+                        ext: {
+                            keyv: digiTrustId.keyv || ''
+                        }
+                    }
+                ]
+            });
+        }
+
+        return eids;
+    }
+
+    function __handleTTDId(eids, idData) {
+        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData.AdserverOrgIp.hasOwnProperty('data')) {
+            eids.push(idData.AdserverOrgIp.data);
+        }
+    }
+
+    function __handleEids(userObj, idData) {
+        var eids = [];
+
+        __handleDigitrustId(eids);
+
+        __handleTTDId(eids, idData);
+
+        if (eids.length > 0) {
+            userObj.eids = eids;
         }
     }
 
@@ -193,9 +253,7 @@ function PubMaticHtb(configs) {
             yob: _parseSlotParam('yob', __globalConfigs.yob)
         };
 
-        if (idData && idData.hasOwnProperty('AdserverOrgIp') && idData.AdserverOrgIp.hasOwnProperty('data')) {
-            userObj.eids = idData.AdserverOrgIp.data;
-        }
+        __handleEids(userObj, idData);
 
         return userObj;
     }
