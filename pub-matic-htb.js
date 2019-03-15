@@ -435,6 +435,7 @@ function PubMaticHtb(configs) {
                 bids = bids.concat(adResponse.seatbid[ii].bid);
             }
         }
+
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
@@ -461,8 +462,8 @@ function PubMaticHtb(configs) {
             }
 
             for (var i = 0; i < bids.length; i++) {
-                for (var ii=0; ii<curReturnParcel.xSlotRef.sizes.length; ii++) {
-                    sizes = curReturnParcel.xSlotRef.sizes[ii];
+                for (var index = 0; index < curReturnParcel.xSlotRef.sizes.length; index++) {
+                    sizes = curReturnParcel.xSlotRef.sizes[index];
 
                     /**
                      * This section maps internal returnParcels and demand returned from the bid request.

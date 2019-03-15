@@ -28,11 +28,19 @@ function getConfig() {
         xSlots: {
             1: {
                 adUnitName: '/43743431/DMDemo',
-                sizes: [[160, 600], [300, 250]] // winning bid for [160x600]
+
+                // Winning bid for [160x600]
+                sizes: [[160, 600], [300, 250]]
             },
             2: {
                 adUnitName: '/43743431/DMDemo1',
-                sizes: [[728, 90], [800, 250], [300, 250]] // winning bid for [300x250]
+
+                // Winning bid for [300x250]
+                sizes: [
+                    [728, 90],
+                    [800, 250],
+                    [300, 250]
+                ]
             }
         }
     };
