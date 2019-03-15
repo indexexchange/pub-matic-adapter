@@ -28,11 +28,11 @@ function getConfig() {
         xSlots: {
             1: {
                 adUnitName: '/43743431/DMDemo',
-                sizes: [[300, 250], [160, 600]]
+                sizes: [[160, 600], [300, 250]] // winning bid for [160x600]
             },
             2: {
                 adUnitName: '/43743431/DMDemo1',
-                sizes: [[728, 90]]
+                sizes: [[728, 90], [800, 250], [300, 250]] // winning bid for [300x250]
             }
         }
     };
@@ -67,7 +67,7 @@ function validateBidRequest(request) {
         expect(body.imp[0].bidFloor).toEqual(parseFloat(config.kadfloor));
         expect(body.imp[0].tagId).toEqual(config.xSlots['1'].adUnitName);
 
-        expect(body.imp[1].banner.format).toBeUndefined();
+        expect(body.imp[1].banner.format).toBeDefined();
         expect(body.imp[1].banner.w).toEqual(sizes2[0][0]);
         expect(body.imp[1].banner.h).toEqual(sizes2[0][1]);
         expect(body.imp[1].bidFloor).toEqual(parseFloat(config.kadfloor));
@@ -119,8 +119,8 @@ function getValidResponse(request, creative) {
                         adm: creative,
                         adomain: ['mystartab.com'],
                         cid: '16981',
-                        h: 250,
-                        w: 300,
+                        h: 600,
+                        w: 160,
                         ext: {
                             dspid: 6
                         }
@@ -132,8 +132,8 @@ function getValidResponse(request, creative) {
                         adm: creative,
                         adomain: ['mystartab.com'],
                         cid: '16981',
-                        h: 90,
-                        w: 728,
+                        h: 250,
+                        w: 300,
                         ext: {
                             dspid: 6
                         }

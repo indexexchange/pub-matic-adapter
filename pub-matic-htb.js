@@ -435,7 +435,7 @@ function PubMaticHtb(configs) {
                 bids = bids.concat(adResponse.seatbid[ii].bid);
             }
         }
-
+        console.log(JSON.stringify(adResponse));
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
@@ -462,21 +462,23 @@ function PubMaticHtb(configs) {
             }
 
             for (var i = 0; i < bids.length; i++) {
-                sizes = curReturnParcel.xSlotRef.sizes[0];
+                for (var ii=0; ii<curReturnParcel.xSlotRef.sizes.length; ii++) {
+                    sizes = curReturnParcel.xSlotRef.sizes[ii];
 
-                /**
-                 * This section maps internal returnParcels and demand returned from the bid request.
-                 * In order to match them correctly, they must be matched via some criteria. This
-                 * is usually some sort of placements or inventory codes. Please replace the someCriteria
-                 * key to a key that represents the placement in the configuration and in the bid responses.
-                */
-                if (bids[i].impid === curReturnParcel.htSlot.getId()) {
-                    if (parseInt(bids[i].w, 10) === parseInt(sizes[0], 10)
-                        && parseInt(bids[i].h, 10) === parseInt(sizes[1], 10)) {
-                        curBid = bids[i];
-                        bids.splice(i, 1);
+                    /**
+                     * This section maps internal returnParcels and demand returned from the bid request.
+                     * In order to match them correctly, they must be matched via some criteria. This
+                     * is usually some sort of placements or inventory codes. Please replace the someCriteria
+                     * key to a key that represents the placement in the configuration and in the bid responses.
+                    */
+                    if (bids[i].impid === curReturnParcel.htSlot.getId()) {
+                        if (parseInt(bids[i].w, 10) === parseInt(sizes[0], 10)
+                            && parseInt(bids[i].h, 10) === parseInt(sizes[1], 10)) {
+                            curBid = bids[i];
+                            bids.splice(i, 1);
 
-                        break;
+                            break;
+                        }
                     }
                 }
             }
