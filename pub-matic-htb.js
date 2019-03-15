@@ -435,7 +435,6 @@ function PubMaticHtb(configs) {
                 bids = bids.concat(adResponse.seatbid[ii].bid);
             }
         }
-        console.log(JSON.stringify(adResponse));
         /* --------------------------------------------------------------------------------- */
 
         for (var j = 0; j < returnParcels.length; j++) {
