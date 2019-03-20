@@ -448,6 +448,8 @@ function PubMaticHtb(configs) {
 
             var curBid;
             var sizes;
+            var curReturnParcelLen = curReturnParcel.xSlotRef.sizes.length;
+            var bidMatchFound = false;
 
             if (!bids
               || !Utilities.isArray(bids)
@@ -462,7 +464,8 @@ function PubMaticHtb(configs) {
             }
 
             for (var i = 0; i < bids.length; i++) {
-                for (var index = 0; index < curReturnParcel.xSlotRef.sizes.length; index++) {
+                bidMatchFound = false;
+                for (var index = 0; index < curReturnParcelLen; index++) {
                     sizes = curReturnParcel.xSlotRef.sizes[index];
 
                     /**
@@ -476,10 +479,15 @@ function PubMaticHtb(configs) {
                             && parseInt(bids[i].h, 10) === parseInt(sizes[1], 10)) {
                             curBid = bids[i];
                             bids.splice(i, 1);
+                            bidMatchFound = true;
 
                             break;
                         }
                     }
+                }
+
+                if (bidMatchFound) {
+                    break;
                 }
             }
 

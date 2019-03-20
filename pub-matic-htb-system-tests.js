@@ -76,8 +76,14 @@ function validateBidRequest(request) {
         expect(body.imp[0].tagId).toEqual(config.xSlots['1'].adUnitName);
 
         expect(body.imp[1].banner.format).toBeDefined();
+        expect(body.imp[1].banner.format.length).toEqual(sizes2.length - 1);
         expect(body.imp[1].banner.w).toEqual(sizes2[0][0]);
         expect(body.imp[1].banner.h).toEqual(sizes2[0][1]);
+        expect(body.imp[1].banner.format[0].w).toEqual(sizes2[1][0]);
+        expect(body.imp[1].banner.format[0].h).toEqual(sizes2[1][1]);
+        expect(body.imp[1].banner.format[1].w).toEqual(sizes2[2][0]);
+        expect(body.imp[1].banner.format[1].h).toEqual(sizes2[2][1]);
+
         expect(body.imp[1].bidFloor).toEqual(parseFloat(config.kadfloor));
         expect(body.imp[1].tagId).toEqual(config.xSlots['2'].adUnitName);
 
