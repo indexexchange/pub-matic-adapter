@@ -116,7 +116,7 @@ function PubMaticHtb(configs) {
             impObj = {
                 id: rp.htSlot.getId(),
                 tagId: rp.xSlotRef.adUnitName,
-                secure: 1,
+                secure: Browser.getProtocol() === 'https:' ? 1 : 0,
                 bidFloor: _parseSlotParam('kadfloor', __globalConfigs.kadfloor),
                 ext: {
                     pmZoneId: _parseSlotParam('pmzoneid', rp.pmzoneid)
@@ -284,7 +284,7 @@ function PubMaticHtb(configs) {
         /* ---------------------- PUT CODE HERE ------------------------------------ */
         var payload = {};
         var callbackId = System.generateUniqueId();
-        var baseUrl = 'https://hbopenbid.pubmatic.com/translator?source=index-client';
+        var baseUrl = Browser.getProtocol() + '//hbopenbid.pubmatic.com/translator?source=index-client';
         payload = {
             // Str | mandatory
             id: String(new Date()
