@@ -66,7 +66,7 @@ function validateBidRequest(request) {
         expect(body.id).toBeDefined();
         expect(body.imp.length).toEqual(2);
         expect(body.imp[0].banner.format).toBeDefined();
-
+        expect(body.imp[0].secure).toEqual(1);
         expect(body.imp[0].banner.format.length).toEqual(sizes1.length - 1);
         expect(body.imp[0].banner.w).toEqual(sizes1[0][0]);
         expect(body.imp[0].banner.h).toEqual(sizes1[0][1]);
